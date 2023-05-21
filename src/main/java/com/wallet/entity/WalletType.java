@@ -15,11 +15,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "Level")
+@Entity(name = "WalletType")
 @Table(
-        name = "tblLevel"
+        name = "tblWalletType"
 )
-public class Level implements Serializable {
+public class WalletType implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(
@@ -31,9 +31,9 @@ public class Level implements Serializable {
     @Lob
     @Nationalized
     @Column(
-            name = "level"
+            name = "type"
     )
-    private String level;
+    private String type;
 
     @Lob
     @Nationalized
@@ -45,11 +45,7 @@ public class Level implements Serializable {
     @Column(name = "status")
     private boolean status;
 
-    @OneToMany(mappedBy = "level", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "type", fetch = FetchType.LAZY)
     @JsonBackReference
-    private List<ProgramLevel> programLevelList;
-
-    @OneToMany(mappedBy = "level", fetch = FetchType.LAZY)
-    @JsonBackReference
-    private List<Membership> membershipList;
+    private List<Wallet> walletList;
 }
