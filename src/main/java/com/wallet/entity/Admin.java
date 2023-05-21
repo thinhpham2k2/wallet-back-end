@@ -77,6 +77,6 @@ public class Admin implements Serializable {
     private String phone;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
 }

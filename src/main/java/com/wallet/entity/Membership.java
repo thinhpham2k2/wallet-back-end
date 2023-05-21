@@ -46,10 +46,10 @@ public class Membership implements Serializable {
     private BigDecimal totalExpenditure;
 
     @Column(name = "state")
-    private boolean state;
+    private Boolean state;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @ManyToOne
     @JsonManagedReference

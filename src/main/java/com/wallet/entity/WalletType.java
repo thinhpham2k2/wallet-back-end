@@ -43,7 +43,7 @@ public class WalletType implements Serializable {
     private String description;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @OneToMany(mappedBy = "type", fetch = FetchType.LAZY)
     @JsonBackReference

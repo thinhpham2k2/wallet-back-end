@@ -43,7 +43,7 @@ public class Level implements Serializable {
     private String description;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @OneToMany(mappedBy = "level", fetch = FetchType.LAZY)
     @JsonBackReference

@@ -83,10 +83,10 @@ public class Partner implements Serializable {
     private String address;
 
     @Column(name = "state")
-    private boolean state;
+    private Boolean state;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @OneToMany(mappedBy = "partner", fetch = FetchType.LAZY)
     @JsonBackReference

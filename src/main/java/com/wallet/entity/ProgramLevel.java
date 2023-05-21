@@ -35,10 +35,10 @@ public class ProgramLevel implements Serializable {
     private String description;
 
     @Column(name = "state")
-    private boolean state;
+    private Boolean state;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @ManyToOne
     @JsonManagedReference

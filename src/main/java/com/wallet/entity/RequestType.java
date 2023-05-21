@@ -28,10 +28,10 @@ public class RequestType implements Serializable {
     private Long id;
 
     @Column(name = "type")
-    private boolean type;
+    private Boolean type;
 
     @Column(name = "status")
-    private boolean status;
+    private Boolean status;
 
     @OneToMany(mappedBy = "type", fetch = FetchType.LAZY)
     @JsonBackReference
