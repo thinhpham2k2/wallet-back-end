@@ -1,21 +1,11 @@
 package com.wallet.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.wallet.entity.Customer;
-import com.wallet.entity.Program;
-import com.wallet.entity.Request;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Lob;
-import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Nationalized;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
 @Builder

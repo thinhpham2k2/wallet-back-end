@@ -8,6 +8,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface AdminMapper {
+
     AdminMapper INSTANCE = Mappers.getMapper(AdminMapper.class);
 
     AdminDTO toDTO(Admin entity);

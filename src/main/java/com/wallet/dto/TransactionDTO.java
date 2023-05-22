@@ -1,15 +1,9 @@
 package com.wallet.dto;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.wallet.entity.Request;
-import com.wallet.entity.Type;
-import com.wallet.entity.Wallet;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Nationalized;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
