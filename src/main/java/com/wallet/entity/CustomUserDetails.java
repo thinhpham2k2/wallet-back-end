@@ -20,9 +20,9 @@ public class CustomUserDetails implements UserDetails {
         return role;
     }
 
-    public User getUser() {
-        return user;
-    }
+    public Admin getAdmin() {return admin;}
+
+    public Partner getPartner(){ return partner; }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -31,12 +31,18 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        if(this.partner == null){
+            return admin.getPassword();
+        }
+        return partner.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        if(this.partner == null){
+            return admin.getUserName();
+        }
+        return partner.getUserName();
     }
 
     @Override
@@ -58,4 +64,5 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }
