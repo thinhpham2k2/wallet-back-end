@@ -19,7 +19,7 @@ public class JwtTokenProvider {
 
     public String generateToken(CustomUserDetails userDetails) {
         Date now = new Date();
-        String subject = new String();
+        String subject;
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
         //Tạo subject cho JWT
         if(userDetails.getPartner()==null){
@@ -36,12 +36,12 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public Long getUserIdFromJWT(String token) {
+    public String getUserNameFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(JWT_SECRET)
                 .parseClaimsJws(token)
                 .getBody();
-        return Long.parseLong(claims.getSubject());
+        return claims.getSubject();
     }
 
     public boolean validateToken(String authToken) {
