@@ -1,7 +1,11 @@
 package com.wallet.service;
 
+import com.wallet.entity.Admin;
+import com.wallet.entity.CustomUserDetails;
+import com.wallet.entity.Partner;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
+import com.wallet.service.interfaces.ICustomUserDetailsService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,48 +28,24 @@ public class CustomUserDetailsService implements ICustomUserDetailsService, User
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if (userRepository.findByEmailAndStatus(username, true).isEmpty()) {
-            throw new UsernameNotFoundException(username);
-        }
-        User user = userRepository.findByEmailAndStatus(username, true).get();
-        Set<GrantedAuthority> authoritySet;
-        authoritySet = new HashSet<>();
-        String role = user.getRole().getRoleName();
-        List<String> listAuth = generateAuthoriessByRoleId(user.getRole().getListRolePermissionScope());
 
-        for (String s: listAuth) {
-            authoritySet.add(new SimpleGrantedAuthority(s));
-        }
-        return new CustomUserDetails(user, authoritySet, role);
-    }
+        Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(username, true);
+        Optional<Admin> admin = adminRepository.findAdminByUserNameAndStatus(username, true);
+        String role;
 
-    @Override
-    public UserDetails loadUserById(Long id) throws Exception {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isEmpty()) {
-            throw new Exception();
+        if (partner.isEmpty()) {
+            if (admin.isEmpty()) {
+                throw new UsernameNotFoundException(username);
+            } else {
+                role = "Admin";
+            }
+        }else {
+            role = "Partner";
         }
-        User result = user.get();
-        String role = result.getRole().getRoleName();
-        Set<GrantedAuthority> authoritySet;
-        authoritySet = new HashSet<>();
-        List<String> listAuth = generateAuthoriessByRoleId(result.getRole().getListRolePermissionScope());
+        Set<GrantedAuthority> authoritySet = new HashSet<>();
+        authoritySet.add(new SimpleGrantedAuthority(role));
 
-        for (String s: listAuth) {
-            authoritySet.add(new SimpleGrantedAuthority(s));
-        }
-        return new CustomUserDetails(result, authoritySet, role);
-    }
-
-    @Override
-    public List<String> generateAuthoriessByRoleId(List<RolePermissionScope> rolePermissionScopeEntityList) {
-        List<String> result = new ArrayList<>();
-        for (RolePermissionScope item: rolePermissionScopeEntityList) {
-            String s = "";
-            s = "ROLE_"+  item.getPermission().getPermissionName() + "_"+item.getPermissionScope().getScopeName() ;
-            result.add(s);
-        }
-        return result;
+        return new CustomUserDetails(admin.get(), partner.get(), authoritySet, role);
     }
 
 }

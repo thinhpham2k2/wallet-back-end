@@ -25,11 +25,11 @@ public class JwtTokenProvider {
         if(userDetails.getPartner()==null){
             subject = userDetails.getAdmin().getUserName();
         }else{
-
+            subject = userDetails.getPartner().getUserName();
         }
         // Tạo chuỗi json web token từ id của user.
         return Jwts.builder()
-                .setSubject(userDetails.getAdmin().getUserName())
+                .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
