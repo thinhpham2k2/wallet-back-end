@@ -63,7 +63,7 @@ public class AuthenticationController {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginFormDTO.getUserName(), loginFormDTO.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            String token = jwtTokenProvider.generateToken(user, 604800000L);
+            String token = jwtTokenProvider.generateToken(user, 172800000L);
             if (user.getPartner() != null){
                 PartnerDTO partnerDTO = PartnerMapper.INSTANCE.toDTO(user.getPartner());
                 return ResponseEntity.ok(new JwtResponseDTO(token, partnerDTO, null));
