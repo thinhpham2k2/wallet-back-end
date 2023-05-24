@@ -8,7 +8,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -21,5 +23,10 @@ public class PartnerService implements IPartnerService {
     @Override
     public PartnerDTO getByUsernameAndStatus(String userName, boolean status) {
         return PartnerMapper.INSTANCE.toDTO(partnerRepository.findPartnerByUserNameAndStatus(userName, status).get());
+    }
+
+    @Override
+    public List<PartnerDTO> getAllPartner(boolean status) {
+        return partnerRepository.findPartnersByStatus(true).stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList());
     }
 }

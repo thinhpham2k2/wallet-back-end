@@ -3,8 +3,11 @@ package com.wallet.jwt;
 import com.wallet.entity.CustomUserDetails;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
+import java.security.KeyStore;
 import java.util.Date;
 
 
@@ -14,13 +17,10 @@ public class JwtTokenProvider {
 
     private final String JWT_SECRET = "LondonIsBlue";
 
-    private final Long JWT_EXPIRATION = 8640000L;
-
-
-    public String generateToken(CustomUserDetails userDetails) {
+    public String generateToken(CustomUserDetails userDetails, Long jwtExpiration) {
         Date now = new Date();
         String subject;
-        Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
+        Date expiryDate = new Date(now.getTime() + jwtExpiration);
         //Tạo subject cho JWT
         if(userDetails.getPartner()==null){
             subject = userDetails.getAdmin().getUserName();

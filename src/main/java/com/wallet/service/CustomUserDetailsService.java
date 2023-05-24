@@ -44,9 +44,9 @@ public class CustomUserDetailsService implements ICustomUserDetailsService, User
         }
 
         Set<GrantedAuthority> authoritySet = new HashSet<>();
-        authoritySet.add(new SimpleGrantedAuthority(role));
+        authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
 
-        return new CustomUserDetails(admin.isPresent() && !partner.isPresent() ? admin.get() : null, partner.isPresent() ? partner.get() : null, authoritySet, role);
+        return new CustomUserDetails(admin.isPresent() && partner.isEmpty() ? admin.get() : null, partner.orElse(null), authoritySet, role);
     }
 
 }
