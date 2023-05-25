@@ -1,11 +1,13 @@
 package com.wallet.service;
 
 import com.wallet.dto.PartnerDTO;
+import com.wallet.entity.Partner;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IPartnerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +28,13 @@ public class PartnerService implements IPartnerService {
     }
 
     @Override
-    public List<PartnerDTO> getAllPartner(boolean status) {
-        return partnerRepository.findPartnersByStatus(true).stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList());
+    public Page<PartnerDTO> getAllPartner(boolean status) {
+        Pageable pageable = PageRequest.of(0, 10).withSort(Sort.by("userName"));
+
+        Page<Partner> pageResult = partnerRepository.findPartnersByStatus(true, pageable);
+
+        return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()),
+                pageResult.getPageable(),
+                pageResult.getTotalElements());
     }
 }

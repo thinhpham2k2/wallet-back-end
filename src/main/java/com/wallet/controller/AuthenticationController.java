@@ -46,7 +46,7 @@ public class AuthenticationController {
 
     private final JwtTokenProvider jwtTokenProvider;
 
-    @PostMapping("/login")
+    @PostMapping("/signin")
     @Operation(summary = "Login to system")
     public ResponseEntity<?> loginAccount(@RequestBody LoginFormDTO loginFormDTO){
         String userName = loginFormDTO.getUserName();
