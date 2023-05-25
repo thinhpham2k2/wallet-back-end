@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -53,11 +55,11 @@ public class AuthenticationController {
         String pass = loginFormDTO.getPassword();
 
         if (userName == null || userName.isEmpty()) {
-            return ResponseEntity.badRequest().body("Missing email");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing user name");
         }
 
         if (pass == null || pass.isEmpty()) {
-            return ResponseEntity.badRequest().body("Missing password");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing password");
         }
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginFormDTO.getUserName(), loginFormDTO.getPassword()));
@@ -72,10 +74,10 @@ public class AuthenticationController {
                 AdminDTO adminDTO = AdminMapper.INSTANCE.toDTO(user.getAdmin());
                 return ResponseEntity.ok(new JwtResponseDTO(token,null, adminDTO));
             }  else {
-                return ResponseEntity.badRequest().body("Invalid user name or password");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid user name or password");
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid user name or password");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid user name or password");
         }
     }
 
