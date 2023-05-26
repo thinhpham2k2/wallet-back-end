@@ -39,7 +39,7 @@ public class PartnerController {
             return ResponseEntity.status(HttpStatus.OK).body(partners);
         }
         else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found partner list!");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found partner list !");
         }
     }
 }
