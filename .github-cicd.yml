@@ -1,0 +1,11 @@
+- uses: azure/webapps-deploy@v2
+  with:
+    publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+- name: Setup Java 1.8.x
+      uses: actions/setup-java@v1
+      with:
+        # If your pom.xml <maven.compiler.source> version is not in 1.8.x,
+        # change the Java version to match the version in pom.xml <maven.compiler.source>
+        java-version: '1.8.x'
+- name: Build with Maven
+  run: mvn package --file pom.xml
