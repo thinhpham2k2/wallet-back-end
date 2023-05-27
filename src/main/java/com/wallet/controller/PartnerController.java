@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -14,12 +15,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Partner API")
-@RequestMapping("/api/partner")
+@RequestMapping("/api/partners")
 @SecurityRequirement(name = "Authorization")
 @Slf4j
 public class PartnerController {
@@ -32,10 +31,10 @@ public class PartnerController {
 
     @GetMapping("")
     @Secured({ADMIN})
-    @Operation(summary = "Get all partner")
+    @Operation(summary = "Get partner list")
     public ResponseEntity<?> getAllPartner(){
-        List<PartnerDTO> partners = partnerService.getAllPartner(true);
-        if (!partners.isEmpty()){
+        Page<PartnerDTO> partners = partnerService.getAllPartner(true);
+        if (!partners.getContent().isEmpty()){
             return ResponseEntity.status(HttpStatus.OK).body(partners);
         }
         else {
