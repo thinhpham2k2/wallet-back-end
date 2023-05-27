@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Partner API")
-@RequestMapping("/api/partner")
+@RequestMapping("/api/partners")
 @SecurityRequirement(name = "Authorization")
 @Slf4j
 public class PartnerController {
@@ -31,7 +31,7 @@ public class PartnerController {
 
     @GetMapping("")
     @Secured({ADMIN})
-    @Operation(summary = "Get all partner")
+    @Operation(summary = "Get partner list")
     public ResponseEntity<?> getAllPartner(){
         Page<PartnerDTO> partners = partnerService.getAllPartner(true);
         if (!partners.getContent().isEmpty()){
