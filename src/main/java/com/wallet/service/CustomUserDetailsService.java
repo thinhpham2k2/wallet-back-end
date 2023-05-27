@@ -15,7 +15,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -49,4 +51,25 @@ public class CustomUserDetailsService implements ICustomUserDetailsService, User
         return new CustomUserDetails(admin.isPresent() && partner.isEmpty() ? admin.get() : null, partner.orElse(null), authoritySet, role);
     }
 
+    @Override
+    public UserDetails loadUserByEmail(String email) {
+        Optional<Partner> partner = partnerRepository.findPartnerByEmailAndStatus(email, true);
+        Optional<Admin> admin = adminRepository.findAdminByEmailAndStatus(email, true);
+        String role;
+
+        if (partner.isEmpty()) {
+            if (admin.isEmpty()) {
+                throw new UsernameNotFoundException(email);
+            } else {
+                role = "Admin";
+            }
+        }else {
+            role = "Partner";
+        }
+
+        Set<GrantedAuthority> authoritySet = new HashSet<>();
+        authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
+
+        return new CustomUserDetails(admin.isPresent() && partner.isEmpty() ? admin.get() : null, partner.orElse(null), authoritySet, role);
+    }
 }

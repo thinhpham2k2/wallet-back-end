@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,7 +18,6 @@ import java.util.stream.Collectors;
 public class PartnerService implements IPartnerService {
 
     private final PartnerRepository partnerRepository;
-
 
     @Override
     public PartnerDTO getByUsernameAndStatus(String userName, boolean status) {
