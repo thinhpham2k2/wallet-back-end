@@ -9,4 +9,5 @@ public interface IPartnerService {
 
     Page<PartnerDTO> getAllPartner(boolean status);
 
+    PartnerDTO creatPartner(PartnerDTO partner);
 }

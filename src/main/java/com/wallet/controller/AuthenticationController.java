@@ -55,7 +55,7 @@ public class AuthenticationController {
 
     @PostMapping("/sign-in")
     @Operation(summary = "Login to system")
-    public ResponseEntity<?> loginAccount(@RequestBody LoginFormDTO loginFormDTO){
+    public ResponseEntity<?> loginAccount(@RequestBody LoginFormDTO loginFormDTO) {
         String userName = loginFormDTO.getUserName();
         String pass = loginFormDTO.getPassword();
 
@@ -71,14 +71,10 @@ public class AuthenticationController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
             String token = jwtTokenProvider.generateToken(user, 172800000L);
-            if (user.getPartner() != null){
-                PartnerDTO partnerDTO = PartnerMapper.INSTANCE.toDTO(user.getPartner());
-                return ResponseEntity.status(HttpStatus.OK).body(new JwtResponseDTO(token, partnerDTO, null));
-            }
-            else if (user.getAdmin() !=null) {
-                AdminDTO adminDTO = AdminMapper.INSTANCE.toDTO(user.getAdmin());
-                return ResponseEntity.status(HttpStatus.OK).body(new JwtResponseDTO(token,null, adminDTO));
-            }  else {
+            JwtResponseDTO jwtResponseDTO = jwtService.validJwtResponse(token, user);
+            if (jwtResponseDTO != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(jwtResponseDTO);
+            } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user name or password");
             }
         } catch (Exception e) {
@@ -89,39 +85,49 @@ public class AuthenticationController {
     @GetMapping("/jwt/refresher")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Refresh jwt token")
-    public ResponseEntity<?> getUsernameFromJwt(HttpServletRequest request){
+    public ResponseEntity<?> refreshTokenByJwt(HttpServletRequest request) {
         String jwt = jwtService.getJwtFromRequest(request);
-        if (jwt!=null) {
+        if (jwt != null) {
             String refreshToken = jwtService.refreshJwtToken(jwt, 172800000L);
-            if(refreshToken!=null){
+            if (refreshToken != null) {
                 CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                if (user.getPartner() != null){
-                    PartnerDTO partnerDTO = PartnerMapper.INSTANCE.toDTO(user.getPartner());
-                    return ResponseEntity.status(HttpStatus.OK).body(new JwtResponseDTO(refreshToken, partnerDTO, null));
-                }
-                else if (user.getAdmin() !=null) {
-                    AdminDTO adminDTO = AdminMapper.INSTANCE.toDTO(user.getAdmin());
-                    return ResponseEntity.status(HttpStatus.OK).body(new JwtResponseDTO(refreshToken,null, adminDTO));
-                }  else {
+                JwtResponseDTO jwtResponseDTO = jwtService.validJwtResponse(refreshToken, user);
+                if (jwtResponseDTO != null) {
+                    return ResponseEntity.status(HttpStatus.OK).body(jwtResponseDTO);
+                } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid jwt token !");
                 }
             }
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Invalid jwt token !");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid jwt token !");
         }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Not found jwt token !");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 
-    @GetMapping("/google-token/{token}")
+    @PostMapping("/google-token")
     @Operation(summary = "Get JWT token by Google token")
-    public ResponseEntity<?> getJwtFromGoogleToken(@PathVariable("token") String googleToken){
-        if (googleToken!=null) {
-            String jwt = jwtService.getJwtFromGoogleToken(googleToken,172800000L);
-            if(jwt!=null){
+    public ResponseEntity<?> getJwtFromGoogleToken(@RequestParam(value = "token", required = true) String googleToken) {
+        if (googleToken != null) {
+            JwtResponseDTO jwt = jwtService.getJwtFromGoogleToken(googleToken, 172800000L);
+            if (jwt != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(jwt);
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid google token !");
         }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Not found google token !");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found google token !");
     }
 
+    @PostMapping("/google-token/register")
+    @Operation(summary = "Create account partner for the first time login with Google")
+    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerDTO partnerDTO) {
+        if (partnerDTO != null) {
+            PartnerDTO partner = partnerService.creatPartner(partnerDTO);
+            if (partner != null) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(partner);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create partner account failure !");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found partner information !");
+        }
+    }
 }

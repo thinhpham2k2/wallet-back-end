@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,5 +34,13 @@ public class PartnerService implements IPartnerService {
         return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()),
                 pageResult.getPageable(),
                 pageResult.getTotalElements());
+    }
+
+    @Override
+    public PartnerDTO creatPartner(PartnerDTO partner) {
+        if (partner.getEmail().equals("string")){
+            return PartnerMapper.INSTANCE.toDTO(partnerRepository.save(PartnerMapper.INSTANCE.toEntity(partner)));
+        }
+        return null;
     }
 }

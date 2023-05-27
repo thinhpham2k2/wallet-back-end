@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Nationalized;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -34,6 +35,11 @@ public class Level implements Serializable {
             name = "level"
     )
     private String level;
+
+    @Column(
+            name = "[condition]"
+    )
+    private BigDecimal condition;
 
     @Lob
     @Nationalized

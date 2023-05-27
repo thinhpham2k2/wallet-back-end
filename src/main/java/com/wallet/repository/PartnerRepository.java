@@ -13,5 +13,7 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
 
     Optional<Partner> findPartnerByEmailAndStatus(String email, boolean status);
 
+    Boolean existsPartnerByEmail(String email);
+
     Page<Partner> findPartnersByStatus(boolean status, Pageable pageable);
 }

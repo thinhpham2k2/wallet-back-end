@@ -1,5 +1,7 @@
 package com.wallet.service.interfaces;
 
+import com.wallet.dto.JwtResponseDTO;
+import com.wallet.entity.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface IJwtService {
@@ -8,5 +10,7 @@ public interface IJwtService {
 
     String refreshJwtToken(String token, Long jwtExpiration);
 
-    String getJwtFromGoogleToken(String googleToken, Long jwtExpiration);
+    JwtResponseDTO getJwtFromGoogleToken(String googleToken, Long jwtExpiration);
+
+    JwtResponseDTO validJwtResponse(String jwt, CustomUserDetails userDetails);
 }
