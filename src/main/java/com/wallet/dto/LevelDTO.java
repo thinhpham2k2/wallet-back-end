@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -15,6 +16,7 @@ public class LevelDTO implements Serializable {
 
     private Long id;
     private String level;
+    private BigDecimal condition;
     private String description;
     private Boolean status;
 
