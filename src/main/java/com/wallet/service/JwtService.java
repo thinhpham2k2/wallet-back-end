@@ -83,7 +83,7 @@ public class JwtService implements IJwtService {
             jwt = jwtTokenProvider.generateToken(userDetails, jwtExpiration);
             JwtResponseDTO jwtResponseDTO = validJwtResponse(jwt, userDetails);
 
-            return Objects.requireNonNullElseGet(jwtResponseDTO, () -> new JwtResponseDTO(null, new PartnerDTO(null, email, null, null, email, null, null, null, true, true), null));
+            return Objects.requireNonNullElseGet(jwtResponseDTO, () -> new JwtResponseDTO(null, new PartnerDTO(null, null, null, null, email, null, null, null, true, true), null));
 
         } catch (Exception e) {
             throw new InvalidParameterException("Invalid google token !");

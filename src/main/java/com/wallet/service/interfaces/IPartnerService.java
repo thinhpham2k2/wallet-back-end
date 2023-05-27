@@ -1,6 +1,8 @@
 package com.wallet.service.interfaces;
 
+import com.wallet.dto.JwtResponseDTO;
 import com.wallet.dto.PartnerDTO;
+import com.wallet.dto.PartnerRegisterDTO;
 import org.springframework.data.domain.Page;
 
 public interface IPartnerService {
@@ -9,5 +11,5 @@ public interface IPartnerService {
 
     Page<PartnerDTO> getAllPartner(boolean status);
 
-    PartnerDTO creatPartner(PartnerDTO partner);
+    JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration);
 }

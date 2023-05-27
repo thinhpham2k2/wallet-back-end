@@ -1,9 +1,6 @@
 package com.wallet.controller;
 
-import com.wallet.dto.AdminDTO;
-import com.wallet.dto.JwtResponseDTO;
-import com.wallet.dto.LoginFormDTO;
-import com.wallet.dto.PartnerDTO;
+import com.wallet.dto.*;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.AdminMapper;
@@ -118,11 +115,11 @@ public class AuthenticationController {
 
     @PostMapping("/google-token/register")
     @Operation(summary = "Create account partner for the first time login with Google")
-    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerDTO partnerDTO) {
+    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) {
         if (partnerDTO != null) {
-            PartnerDTO partner = partnerService.creatPartner(partnerDTO);
-            if (partner != null) {
-                return ResponseEntity.status(HttpStatus.CREATED).body(partner);
+            JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 172800000L);
+            if (jwtResponseDTO.getPartnerDTO() != null) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(jwtResponseDTO);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create partner account failure !");
             }

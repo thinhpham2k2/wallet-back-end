@@ -1,8 +1,10 @@
 package com.wallet.service;
 
+import com.wallet.dto.PartnerDTO;
 import com.wallet.entity.Admin;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.entity.Partner;
+import com.wallet.mapper.PartnerMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.ICustomUserDetailsService;
@@ -71,5 +73,14 @@ public class CustomUserDetailsService implements ICustomUserDetailsService, User
         authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
 
         return new CustomUserDetails(admin.isPresent() && partner.isEmpty() ? admin.get() : null, partner.orElse(null), authoritySet, role);
+    }
+
+    @Override
+    public UserDetails loadUserByPartner(PartnerDTO partnerDTO) {
+        String role = "Partner";
+        Set<GrantedAuthority> authoritySet = new HashSet<>();
+        authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
+
+        return new CustomUserDetails(null, PartnerMapper.INSTANCE.toEntity(partnerDTO), authoritySet, role);
     }
 }
