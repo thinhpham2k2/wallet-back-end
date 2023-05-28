@@ -118,7 +118,9 @@ public class PartnerService implements IPartnerService {
 
     @Override
     public PartnerDTO getByIdAndStatus(Long id, boolean status) {
+
         Optional<Partner> partner = partnerRepository.findPartnerByIdAndStatus(id, status);
+
         return partner.map(PartnerMapper.INSTANCE::toDTO).orElse(null);
     }
 }
