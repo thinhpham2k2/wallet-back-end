@@ -1,8 +1,6 @@
 package com.wallet.advice;
 
-import ch.qos.logback.classic.turbo.DuplicateMessageFilter;
 import com.wallet.exception.PartnerException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

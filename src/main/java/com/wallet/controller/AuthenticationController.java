@@ -1,20 +1,18 @@
 package com.wallet.controller;
 
-import com.wallet.dto.*;
+import com.wallet.dto.JwtResponseDTO;
+import com.wallet.dto.LoginFormDTO;
+import com.wallet.dto.PartnerRegisterDTO;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.jwt.JwtTokenProvider;
-import com.wallet.mapper.AdminMapper;
-import com.wallet.mapper.PartnerMapper;
 import com.wallet.service.interfaces.IAdminService;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IPartnerService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -22,11 +20,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

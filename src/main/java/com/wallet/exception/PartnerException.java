@@ -1,9 +1,7 @@
 package com.wallet.exception;
 
-import com.wallet.dto.PartnerDTO;
 import com.wallet.exception.dto.PartnerErrorDTO;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
