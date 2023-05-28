@@ -7,6 +7,7 @@ import com.wallet.entity.CustomUserDetails;
 import com.wallet.entity.Partner;
 import com.wallet.exception.PartnerException;
 import com.wallet.exception.dto.PartnerErrorDTO;
+import com.wallet.exception.dto.PartnerErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.repository.AdminRepository;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,11 +42,9 @@ public class PartnerService implements IPartnerService {
     }
 
     @Override
-    public Page<PartnerDTO> getAllPartner(boolean status) {
-        Pageable pageable = PageRequest.of(0, 10).withSort(Sort.by("userName"));
-
+    public Page<PartnerDTO> getAllPartner(boolean status ,Integer page) {
+        Pageable pageable = PageRequest.of(page == null ? 0 : page, 10).withSort(Sort.by("userName"));
         Page<Partner> pageResult = partnerRepository.findPartnersByStatus(true, pageable);
-
         return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
     }
 
@@ -103,7 +103,7 @@ public class PartnerService implements IPartnerService {
         }
 
         if (flag) {
-            throw new PartnerException(partnerErrorDTO);
+            throw new PartnerException(partnerErrorDTO, null);
         } else {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
             Partner partner = PartnerMapper.INSTANCE.toEntity(partnerDTO);
@@ -120,5 +120,59 @@ public class PartnerService implements IPartnerService {
     public PartnerDTO getByIdAndStatus(Long id, boolean status) {
         Optional<Partner> partner = partnerRepository.findPartnerByIdAndStatus(id, status);
         return partner.map(PartnerMapper.INSTANCE::toDTO).orElse(null);
+    }
+
+    @Override
+    public PartnerDTO updatePartner(PartnerDTO partnerDTO, Long id) {
+        boolean flag = false;
+        PartnerErrorUpdateDTO partnerErrorDTO = new PartnerErrorUpdateDTO();
+
+        //Validate Id
+        if (id == null) {
+            flag = true;
+            partnerErrorDTO.setId("Partner Id mustn't be blank !");
+        }
+
+        //Validate Full name
+        if (partnerDTO.getFullName().isBlank()) {
+            flag = true;
+            partnerErrorDTO.setFullName("Full name mustn't be blank !");
+        }
+
+        //Validate Phone
+        if (partnerDTO.getPhone().length() > 17) {
+            flag = true;
+            partnerErrorDTO.setPhone("Phone number length must be 17 characters or less !");
+        }
+
+        if (flag) {
+            throw new PartnerException(null, partnerErrorDTO);
+        } else {
+            Optional<Partner> partnerOptional = partnerRepository.findPartnerById(id);
+            if (partnerOptional.isPresent()) {
+
+                partnerOptional.get().setFullName(partnerDTO.getFullName());
+                partnerOptional.get().setImage(partnerDTO.getImage());
+                partnerOptional.get().setPhone(partnerDTO.getPhone());
+                partnerOptional.get().setAddress(partnerDTO.getAddress());
+
+                Partner partner = partnerRepository.save(partnerOptional.get());
+                return PartnerMapper.INSTANCE.toDTO(partner);
+            } else {
+                throw new InvalidParameterException("Invalid partner !");
+            }
+        }
+    }
+
+    @Override
+    public PartnerDTO deletePartner(Long id) {
+        Optional<Partner> partnerOptional = partnerRepository.findPartnerByIdAndStatus(id, true);
+        if (partnerOptional.isPresent()) {
+            partnerOptional.get().setStatus(false);
+            Partner partner = partnerRepository.save(partnerOptional.get());
+            return PartnerMapper.INSTANCE.toDTO(partner);
+        } else {
+            throw new InvalidParameterException("Invalid partner !");
+        }
     }
 }

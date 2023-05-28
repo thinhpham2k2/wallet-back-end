@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.InvalidParameterException;
+
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Partner API")
@@ -30,8 +32,8 @@ public class PartnerController {
     @GetMapping("")
     @Secured({ADMIN})
     @Operation(summary = "Get partner list")
-    public ResponseEntity<?> getAllPartner() {
-        Page<PartnerDTO> partners = partnerService.getAllPartner(true);
+    public ResponseEntity<?> getAllPartner(@RequestParam(required = false) Integer page) {
+        Page<PartnerDTO> partners = partnerService.getAllPartner(true, page);
         if (!partners.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(partners);
         } else {
@@ -52,13 +54,33 @@ public class PartnerController {
     }
 
     @PostMapping("")
-    @Operation(summary = "Create account partner")
-    public ResponseEntity<?> createPartner(@RequestBody PartnerRegisterDTO partnerDTO) {
-            JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 172800000L);
-            if (jwtResponseDTO.getPartnerDTO() != null) {
-                return ResponseEntity.status(HttpStatus.CREATED).body(jwtResponseDTO);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create partner account failure !");
-            }
+    @Operation(summary = "Register a partner account")
+    public ResponseEntity<?> registerPartner(@RequestBody PartnerRegisterDTO partnerDTO) {
+        JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 172800000L);
+        if (jwtResponseDTO.getPartnerDTO() != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(jwtResponseDTO);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Register partner account failure !");
+        }
+    }
+
+    @PutMapping("/{id}")
+    @Secured({ADMIN, PARTNER})
+    @Operation(summary = "Update a partner account")
+    public ResponseEntity<?> updatePartner(@RequestBody PartnerDTO partnerDTO, @PathVariable(value = "id") Long id) {
+        PartnerDTO partner = partnerService.updatePartner(partnerDTO, id);
+        return ResponseEntity.status(HttpStatus.OK).body(partner);
+    }
+
+    @DeleteMapping("/{id}")
+    @Secured({ADMIN})
+    @Operation(summary = "Delete a partner account")
+    public ResponseEntity<?> deletePartner(@PathVariable(value = "id", required = false) Long id) {
+        if (id == null) {
+            throw new InvalidParameterException("Invalid partner id");
+        } else {
+            PartnerDTO partner = partnerService.deletePartner(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(partner);
+        }
     }
 }
