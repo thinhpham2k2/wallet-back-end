@@ -1,5 +1,6 @@
 package com.wallet.advice;
 
+import com.wallet.exception.AdminException;
 import com.wallet.exception.PartnerException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,12 @@ public class ApplicationExceptionHandler {
 
     @ExceptionHandler(PartnerException.class)
     public ResponseEntity<?> handlePartnerException(PartnerException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getPartnerErrorDTO());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getPartnerErrorDTO() == null ? ex.getPartnerErrorUpdateDTO() : ex.getPartnerErrorDTO());
+    }
+
+    @ExceptionHandler(AdminException.class)
+    public ResponseEntity<?> handleAdminException(AdminException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getAdminErrorUpdateDTO() == null ? ex.getAdminErrorDTO() : ex.getAdminErrorUpdateDTO());
     }
 
 }

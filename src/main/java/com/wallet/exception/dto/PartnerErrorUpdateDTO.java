@@ -7,13 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartnerErrorDTO {
+public class PartnerErrorUpdateDTO {
 
-    private String userName;
+    private String id;
     private String fullName;
-    private String code;
-    private String email;
     private String phone;
-    private String password;
 
 }
