@@ -1,7 +1,6 @@
 package com.wallet.exception.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +12,7 @@ public class AdminErrorDTO {
     private String userName;
     private String fullName;
     private String email;
+    private String phone;
     private String password;
     private String dob;
 
