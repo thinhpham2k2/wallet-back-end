@@ -33,7 +33,6 @@ import java.util.List;
 @Tag(name = "Authentication API")
 @RequestMapping("/api/auth")
 @SecurityRequirement(name = "Authorization")
-@Slf4j
 public class AuthenticationController {
 
     public static final String ADMIN = "ROLE_Admin";
