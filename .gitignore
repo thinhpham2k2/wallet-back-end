@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Azure ###
+.github/workflows/main_swd-back-end.yml
