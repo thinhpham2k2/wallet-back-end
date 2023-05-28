@@ -93,6 +93,12 @@ public class PartnerService implements IPartnerService {
             partnerErrorDTO.setFullName("Full name mustn't be blank !");
         }
 
+        //Validate Phone
+        if (partnerDTO.getPhone().length() > 17) {
+            flag = true;
+            partnerErrorDTO.setPhone("Phone number length must be 17 characters or less !");
+        }
+
         //Validate Password
         if (partnerRegisterDTO.getPassword().isBlank()) {
             flag = true;

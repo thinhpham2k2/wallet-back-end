@@ -6,7 +6,6 @@ import com.wallet.dto.JwtResponseDTO;
 import com.wallet.entity.Admin;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.exception.AdminException;
-import com.wallet.exception.PartnerException;
 import com.wallet.exception.dto.AdminErrorDTO;
 import com.wallet.exception.dto.AdminErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -172,13 +170,11 @@ public class AdminService implements IAdminService {
             adminErrorDTO.setFullName("Full name mustn't be blank !");
         }
 
-        //Validate Password
-        if (adminRegisterDTO.getPassword().isBlank()) {
+
+        //Validate Phone
+        if (adminDTO.getPhone().length() > 17) {
             flag = true;
-            adminErrorDTO.setPassword("Password mustn't be blank !");
-        } else if (adminRegisterDTO.getPassword().length() < 8) {
-            flag = true;
-            adminErrorDTO.setPassword("The password must be 8 characters or more !");
+            adminErrorDTO.setPhone("Phone number length must be 17 characters or less !");
         }
 
         //Validate date of birth
@@ -197,6 +193,15 @@ public class AdminService implements IAdminService {
                 flag = true;
                 adminErrorDTO.setDob("Invalid date of birth !");
             }
+        }
+
+        //Validate Password
+        if (adminRegisterDTO.getPassword().isBlank()) {
+            flag = true;
+            adminErrorDTO.setPassword("Password mustn't be blank !");
+        } else if (adminRegisterDTO.getPassword().length() < 8) {
+            flag = true;
+            adminErrorDTO.setPassword("The password must be 8 characters or more !");
         }
 
         if (flag) {

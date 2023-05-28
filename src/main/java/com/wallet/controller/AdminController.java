@@ -1,6 +1,8 @@
 package com.wallet.controller;
 
-import com.wallet.dto.*;
+import com.wallet.dto.AdminDTO;
+import com.wallet.dto.AdminRegisterDTO;
+import com.wallet.dto.JwtResponseDTO;
 import com.wallet.service.interfaces.IAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
