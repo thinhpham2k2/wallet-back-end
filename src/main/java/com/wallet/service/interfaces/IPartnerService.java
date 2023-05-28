@@ -11,7 +11,11 @@ public interface IPartnerService {
 
     PartnerDTO getByIdAndStatus(Long id, boolean status);
 
-    Page<PartnerDTO> getAllPartner(boolean status);
+    PartnerDTO updatePartner(PartnerDTO partnerDTO, Long id);
+
+    PartnerDTO deletePartner(Long id);
+
+    Page<PartnerDTO> getAllPartner(boolean status, Integer page);
 
     JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration);
 }

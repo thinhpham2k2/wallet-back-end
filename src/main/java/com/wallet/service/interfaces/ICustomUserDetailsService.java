@@ -1,5 +1,6 @@
 package com.wallet.service.interfaces;
 
+import com.wallet.dto.AdminDTO;
 import com.wallet.dto.PartnerDTO;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -9,4 +10,5 @@ public interface ICustomUserDetailsService {
 
     UserDetails loadUserByPartner(PartnerDTO partnerDTO);
 
+    UserDetails loadUserByAdmin(AdminDTO adminDTO);
 }
