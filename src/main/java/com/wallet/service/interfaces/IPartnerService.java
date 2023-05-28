@@ -9,6 +9,8 @@ public interface IPartnerService {
 
     PartnerDTO getByUsernameAndStatus(String userName, boolean status);
 
+    PartnerDTO getByIdAndStatus(Long id, boolean status);
+
     Page<PartnerDTO> getAllPartner(boolean status);
 
     JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration);

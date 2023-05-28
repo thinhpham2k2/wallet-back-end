@@ -18,6 +18,7 @@ import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,9 +45,7 @@ public class PartnerService implements IPartnerService {
 
         Page<Partner> pageResult = partnerRepository.findPartnersByStatus(true, pageable);
 
-        return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()),
-                pageResult.getPageable(),
-                pageResult.getTotalElements());
+        return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
     }
 
     @Override
@@ -115,5 +114,11 @@ public class PartnerService implements IPartnerService {
             PartnerDTO partnerRegister = PartnerMapper.INSTANCE.toDTO(partnerRepository.save(partner));
             return new JwtResponseDTO(jwtTokenProvider.generateToken((CustomUserDetails) customUserDetailsService.loadUserByPartner(partnerRegister), jwtExpiration), partnerRegister, null);
         }
+    }
+
+    @Override
+    public PartnerDTO getByIdAndStatus(Long id, boolean status) {
+        Optional<Partner> partner = partnerRepository.findPartnerByIdAndStatus(id, status);
+        return partner.map(PartnerMapper.INSTANCE::toDTO).orElse(null);
     }
 }
