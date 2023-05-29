@@ -10,6 +10,7 @@ import com.wallet.exception.dto.AdminErrorDTO;
 import com.wallet.exception.dto.AdminErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.AdminMapper;
+import com.wallet.mapper.AdminRegisterMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IAdminService;
@@ -139,12 +140,11 @@ public class AdminService implements IAdminService {
     @Override
     public JwtResponseDTO createAdmin(AdminRegisterDTO adminRegisterDTO, Long jwtExpiration) {
         boolean flag = false;
-        AdminDTO adminDTO = adminRegisterDTO.getAdminDTO();
         AdminErrorDTO adminErrorDTO = new AdminErrorDTO();
 
         //Validate User Name
-        if (!adminDTO.getUserName().isBlank()) {
-            if (partnerRepository.existsPartnerByUserName(adminDTO.getUserName()) || adminRepository.existsAdminByUserName(adminDTO.getUserName())) {
+        if (!adminRegisterDTO.getUserName().isBlank()) {
+            if (partnerRepository.existsPartnerByUserName(adminRegisterDTO.getUserName()) || adminRepository.existsAdminByUserName(adminRegisterDTO.getUserName())) {
                 flag = true;
                 adminErrorDTO.setUserName("Used user name !");
             }
@@ -154,8 +154,8 @@ public class AdminService implements IAdminService {
         }
 
         //Validate Email
-        if (!adminDTO.getEmail().isBlank()) {
-            if (partnerRepository.existsPartnerByEmail(adminDTO.getEmail()) || adminRepository.existsAdminByEmail(adminDTO.getEmail())) {
+        if (!adminRegisterDTO.getEmail().isBlank()) {
+            if (partnerRepository.existsPartnerByEmail(adminRegisterDTO.getEmail()) || adminRepository.existsAdminByEmail(adminRegisterDTO.getEmail())) {
                 flag = true;
                 adminErrorDTO.setEmail("Used email !");
             }
@@ -165,25 +165,25 @@ public class AdminService implements IAdminService {
         }
 
         //Validate Full name
-        if (adminDTO.getFullName().isBlank()) {
+        if (adminRegisterDTO.getFullName().isBlank()) {
             flag = true;
             adminErrorDTO.setFullName("Full name mustn't be blank !");
         }
 
         //Validate Phone
-        if (adminDTO.getPhone().length() > 17) {
+        if (adminRegisterDTO.getPhone().length() > 17) {
             flag = true;
             adminErrorDTO.setPhone("Phone number length must be 17 characters or less !");
         }
 
         //Validate date of birth
-        if (adminDTO.getDob() == null) {
+        if (adminRegisterDTO.getDob() == null) {
             flag = true;
             adminErrorDTO.setDob("Date of birth mustn't be blank !");
         } else {
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                LocalDate date = LocalDate.parse(adminDTO.getDob().toString(), formatter);
+                LocalDate date = LocalDate.parse(adminRegisterDTO.getDob().toString(), formatter);
                 if (date.isAfter(LocalDate.now().minusYears(18))) {
                     flag = true;
                     adminErrorDTO.setDob("The date of birth must be over 18 years old !");
@@ -207,7 +207,7 @@ public class AdminService implements IAdminService {
             throw new AdminException(null, adminErrorDTO);
         } else {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            Admin admin = AdminMapper.INSTANCE.toEntity(adminDTO);
+            Admin admin = AdminRegisterMapper.INSTANCE.toEntity(adminRegisterDTO);
             admin.setId(null);
             admin.setStatus(true);
             admin.setPassword(passwordEncoder.encode(adminRegisterDTO.getPassword()));

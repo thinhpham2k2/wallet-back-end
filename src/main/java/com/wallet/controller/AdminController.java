@@ -77,7 +77,7 @@ public class AdminController {
     @PostMapping("")
     @Operation(summary = "Create a admin account")
     public ResponseEntity<?> registerPartner(@RequestBody AdminRegisterDTO adminRegisterDTO) throws MethodArgumentTypeMismatchException {
-        JwtResponseDTO jwtResponseDTO = adminService.createAdmin(adminRegisterDTO, 172800000L);
+        JwtResponseDTO jwtResponseDTO = adminService.createAdmin(adminRegisterDTO, 17280000000L);
         if (jwtResponseDTO.getAdminDTO() != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body(jwtResponseDTO);
         } else {

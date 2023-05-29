@@ -60,7 +60,7 @@ public class AuthenticationController {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginFormDTO.getUserName(), loginFormDTO.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-            String token = jwtTokenProvider.generateToken(user, 172800000L);
+            String token = jwtTokenProvider.generateToken(user, 17280000000L);
             JwtResponseDTO jwtResponseDTO = jwtService.validJwtResponse(token, user);
             if (jwtResponseDTO != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(jwtResponseDTO);
@@ -73,6 +73,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/jwt/refresher")
+    @Secured({ADMIN, PARTNER})
     @Operation(summary = "Refresh jwt token")
     public ResponseEntity<?> refreshTokenByJwt(HttpServletRequest request) {
         String jwt = jwtService.getJwtFromRequest(request);
@@ -96,7 +97,7 @@ public class AuthenticationController {
     @Operation(summary = "Login with Google")
     public ResponseEntity<?> getJwtFromEmail(@RequestParam(value = "email", required = true) String email) {
         if (email != null) {
-            JwtResponseDTO jwt = jwtService.getJwtFromEmail(email, 172800000L);
+            JwtResponseDTO jwt = jwtService.getJwtFromEmail(email, 17280000000L);
             if (jwt != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(jwt);
             }
@@ -109,7 +110,7 @@ public class AuthenticationController {
     @Operation(summary = "Create account partner for the first time login with Google")
     public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) {
         if (partnerDTO != null) {
-            JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 172800000L);
+            JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 17280000000L);
             if (jwtResponseDTO.getPartnerDTO() != null) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(jwtResponseDTO);
             } else {

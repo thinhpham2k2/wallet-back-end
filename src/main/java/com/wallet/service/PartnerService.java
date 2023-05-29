@@ -52,12 +52,11 @@ public class PartnerService implements IPartnerService {
     @Override
     public JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration) {
         boolean flag = false;
-        PartnerRegisterDTO partnerDTO = partnerRegisterDTO;
         PartnerErrorDTO partnerErrorDTO = new PartnerErrorDTO();
 
         //Validate User Name
-        if (!partnerDTO.getUserName().isBlank()) {
-            if (partnerRepository.existsPartnerByUserName(partnerDTO.getUserName()) || adminRepository.existsAdminByUserName(partnerDTO.getUserName())) {
+        if (!partnerRegisterDTO.getUserName().isBlank()) {
+            if (partnerRepository.existsPartnerByUserName(partnerRegisterDTO.getUserName()) || adminRepository.existsAdminByUserName(partnerRegisterDTO.getUserName())) {
                 flag = true;
                 partnerErrorDTO.setUserName("Used user name !");
             }
@@ -67,8 +66,8 @@ public class PartnerService implements IPartnerService {
         }
 
         //Validate Email
-        if (!partnerDTO.getEmail().isBlank()) {
-            if (partnerRepository.existsPartnerByEmail(partnerDTO.getEmail()) || adminRepository.existsAdminByEmail(partnerDTO.getEmail())) {
+        if (!partnerRegisterDTO.getEmail().isBlank()) {
+            if (partnerRepository.existsPartnerByEmail(partnerRegisterDTO.getEmail()) || adminRepository.existsAdminByEmail(partnerRegisterDTO.getEmail())) {
                 flag = true;
                 partnerErrorDTO.setEmail("Used email !");
             }
@@ -78,8 +77,8 @@ public class PartnerService implements IPartnerService {
         }
 
         //Validate Code
-        if (!partnerDTO.getCode().isBlank()) {
-            if (partnerRepository.existsPartnerByCode(partnerDTO.getCode())) {
+        if (!partnerRegisterDTO.getCode().isBlank()) {
+            if (partnerRepository.existsPartnerByCode(partnerRegisterDTO.getCode())) {
                 flag = true;
                 partnerErrorDTO.setCode("Used code !");
             }
@@ -89,13 +88,13 @@ public class PartnerService implements IPartnerService {
         }
 
         //Validate Full name
-        if (partnerDTO.getFullName().isBlank()) {
+        if (partnerRegisterDTO.getFullName().isBlank()) {
             flag = true;
             partnerErrorDTO.setFullName("Full name mustn't be blank !");
         }
 
         //Validate Phone
-        if (partnerDTO.getPhone().length() > 17) {
+        if (partnerRegisterDTO.getPhone().length() > 17) {
             flag = true;
             partnerErrorDTO.setPhone("Phone number length must be 17 characters or less !");
         }
@@ -113,7 +112,7 @@ public class PartnerService implements IPartnerService {
             throw new PartnerException(partnerErrorDTO, null);
         } else {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            Partner partner = PartnerRegisterMapper.INSTANCE.toEntity(partnerDTO);
+            Partner partner = PartnerRegisterMapper.INSTANCE.toEntity(partnerRegisterDTO);
             partner.setId(null);
             partner.setState(true);
             partner.setStatus(true);

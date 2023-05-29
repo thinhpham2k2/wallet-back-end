@@ -31,7 +31,7 @@ public class PartnerController {
     private final IPartnerService partnerService;
 
     @GetMapping("")
-//    @Secured({ADMIN})
+    @Secured({ADMIN})
     @Operation(summary = "Get partner list")
     public ResponseEntity<?> getAllPartner(
             @RequestParam(required = false) Integer page
