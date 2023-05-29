@@ -170,7 +170,6 @@ public class AdminService implements IAdminService {
             adminErrorDTO.setFullName("Full name mustn't be blank !");
         }
 
-
         //Validate Phone
         if (adminDTO.getPhone().length() > 17) {
             flag = true;

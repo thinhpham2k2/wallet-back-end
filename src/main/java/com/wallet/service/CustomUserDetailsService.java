@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -45,34 +46,42 @@ public class CustomUserDetailsService implements ICustomUserDetailsService, User
             } else {
                 role = "Admin";
             }
-        }else {
+        } else {
             role = "Partner";
         }
 
         Set<GrantedAuthority> authoritySet = new HashSet<>();
-        authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
+        authoritySet.add(new SimpleGrantedAuthority("ROLE_" + role));
 
         return new CustomUserDetails(admin.isPresent() && partner.isEmpty() ? admin.get() : null, partner.orElse(null), authoritySet, role);
     }
 
     @Override
     public UserDetails loadUserByEmail(String email) {
-        Optional<Partner> partner = partnerRepository.findPartnerByEmailAndStatus(email, true);
-        Optional<Admin> admin = adminRepository.findAdminByEmailAndStatus(email, true);
+        Optional<Partner> partner = partnerRepository.findPartnerByEmail(email);
+        Optional<Admin> admin = adminRepository.findAdminByEmail(email);
         String role;
 
         if (partner.isEmpty()) {
             if (admin.isEmpty()) {
-                throw new UsernameNotFoundException(email);
+                return new CustomUserDetails(null, null, null, null);
             } else {
-                role = "Admin";
+                if (admin.get().getStatus()) {
+                    role = "Admin";
+                } else {
+                    throw new InvalidParameterException("Your email account has been blocked");
+                }
             }
-        }else {
-            role = "Partner";
+        } else {
+            if (partner.get().getStatus()) {
+                role = "Partner";
+            } else {
+                throw new InvalidParameterException("Your email account has been blocked");
+            }
         }
 
         Set<GrantedAuthority> authoritySet = new HashSet<>();
-        authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
+        authoritySet.add(new SimpleGrantedAuthority("ROLE_" + role));
 
         return new CustomUserDetails(admin.isPresent() && partner.isEmpty() ? admin.get() : null, partner.orElse(null), authoritySet, role);
     }
@@ -81,7 +90,7 @@ public class CustomUserDetailsService implements ICustomUserDetailsService, User
     public UserDetails loadUserByPartner(PartnerDTO partnerDTO) {
         String role = "Partner";
         Set<GrantedAuthority> authoritySet = new HashSet<>();
-        authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
+        authoritySet.add(new SimpleGrantedAuthority("ROLE_" + role));
 
         return new CustomUserDetails(null, PartnerMapper.INSTANCE.toEntity(partnerDTO), authoritySet, role);
     }
@@ -90,7 +99,7 @@ public class CustomUserDetailsService implements ICustomUserDetailsService, User
     public UserDetails loadUserByAdmin(AdminDTO adminDTO) {
         String role = "Admin";
         Set<GrantedAuthority> authoritySet = new HashSet<>();
-        authoritySet.add(new SimpleGrantedAuthority("ROLE_"+role));
+        authoritySet.add(new SimpleGrantedAuthority("ROLE_" + role));
 
         return new CustomUserDetails(AdminMapper.INSTANCE.toEntity(adminDTO), null, authoritySet, role);
     }

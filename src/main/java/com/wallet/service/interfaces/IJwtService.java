@@ -10,7 +10,7 @@ public interface IJwtService {
 
     String refreshJwtToken(String token, Long jwtExpiration);
 
-    JwtResponseDTO getJwtFromGoogleToken(String googleToken, Long jwtExpiration);
+    JwtResponseDTO getJwtFromEmail(String googleToken, Long jwtExpiration);
 
     JwtResponseDTO validJwtResponse(String jwt, CustomUserDetails userDetails);
 }
