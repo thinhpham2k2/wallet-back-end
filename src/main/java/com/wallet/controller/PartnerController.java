@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.security.InvalidParameterException;
 
@@ -30,9 +31,12 @@ public class PartnerController {
     private final IPartnerService partnerService;
 
     @GetMapping("")
-    @Secured({ADMIN})
+//    @Secured({ADMIN})
     @Operation(summary = "Get partner list")
-    public ResponseEntity<?> getAllPartner(@RequestParam(required = false) Integer page) {
+    public ResponseEntity<?> getAllPartner(
+            @RequestParam(required = false) Integer page
+    )
+            throws MethodArgumentTypeMismatchException {
         Page<PartnerDTO> partners = partnerService.getAllPartner(true, page);
         if (!partners.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(partners);
@@ -44,7 +48,7 @@ public class PartnerController {
     @GetMapping("/{id}")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Get partner by id")
-    public ResponseEntity<?> getPartnerById(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<?> getPartnerById(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
         PartnerDTO partner = partnerService.getByIdAndStatus(id, true);
         if (partner != null) {
             return ResponseEntity.status(HttpStatus.OK).body(partner);
@@ -55,7 +59,7 @@ public class PartnerController {
 
     @PostMapping("")
     @Operation(summary = "Register a partner account")
-    public ResponseEntity<?> registerPartner(@RequestBody PartnerRegisterDTO partnerDTO) {
+    public ResponseEntity<?> registerPartner(@RequestBody PartnerRegisterDTO partnerDTO) throws MethodArgumentTypeMismatchException {
         JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 172800000L);
         if (jwtResponseDTO.getPartnerDTO() != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body(jwtResponseDTO);
@@ -67,7 +71,7 @@ public class PartnerController {
     @PutMapping("/{id}")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Update a partner account")
-    public ResponseEntity<?> updatePartner(@RequestBody PartnerDTO partnerDTO, @PathVariable(value = "id") Long id) {
+    public ResponseEntity<?> updatePartner(@RequestBody PartnerDTO partnerDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
         PartnerDTO partner = partnerService.updatePartner(partnerDTO, id);
         return ResponseEntity.status(HttpStatus.OK).body(partner);
     }
@@ -75,7 +79,7 @@ public class PartnerController {
     @DeleteMapping("/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Delete a partner account")
-    public ResponseEntity<?> deletePartner(@PathVariable(value = "id", required = false) Long id) {
+    public ResponseEntity<?> deletePartner(@PathVariable(value = "id", required = false) Long id ) throws MethodArgumentTypeMismatchException {
         if (id == null) {
             throw new InvalidParameterException("Invalid partner id");
         } else {
