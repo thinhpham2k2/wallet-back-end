@@ -93,7 +93,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/google")
-    @Operation(summary = "Get JWT token by login with Google")
+    @Operation(summary = "Login with Google")
     public ResponseEntity<?> getJwtFromEmail(@RequestParam(value = "email", required = true) String email) {
         if (email != null) {
             JwtResponseDTO jwt = jwtService.getJwtFromEmail(email, 172800000L);

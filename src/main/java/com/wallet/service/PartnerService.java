@@ -10,6 +10,7 @@ import com.wallet.exception.dto.PartnerErrorDTO;
 import com.wallet.exception.dto.PartnerErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.PartnerMapper;
+import com.wallet.mapper.PartnerRegisterMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IPartnerService;
@@ -51,7 +52,7 @@ public class PartnerService implements IPartnerService {
     @Override
     public JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration) {
         boolean flag = false;
-        PartnerDTO partnerDTO = partnerRegisterDTO.getPartnerDTO();
+        PartnerRegisterDTO partnerDTO = partnerRegisterDTO;
         PartnerErrorDTO partnerErrorDTO = new PartnerErrorDTO();
 
         //Validate User Name
@@ -112,7 +113,7 @@ public class PartnerService implements IPartnerService {
             throw new PartnerException(partnerErrorDTO, null);
         } else {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            Partner partner = PartnerMapper.INSTANCE.toEntity(partnerDTO);
+            Partner partner = PartnerRegisterMapper.INSTANCE.toEntity(partnerDTO);
             partner.setId(null);
             partner.setState(true);
             partner.setStatus(true);
