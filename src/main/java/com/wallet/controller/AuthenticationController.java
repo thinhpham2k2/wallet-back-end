@@ -73,7 +73,6 @@ public class AuthenticationController {
     }
 
     @GetMapping("/jwt/refresher")
-    @Secured({ADMIN, PARTNER})
     @Operation(summary = "Refresh jwt token")
     public ResponseEntity<?> refreshTokenByJwt(HttpServletRequest request) {
         String jwt = jwtService.getJwtFromRequest(request);
@@ -93,11 +92,11 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 
-    @PostMapping("/google-token")
-    @Operation(summary = "Get JWT token by Google token")
-    public ResponseEntity<?> getJwtFromGoogleToken(@RequestParam(value = "token", required = true) String googleToken) {
-        if (googleToken != null) {
-            JwtResponseDTO jwt = jwtService.getJwtFromGoogleToken(googleToken, 172800000L);
+    @PostMapping("/google")
+    @Operation(summary = "Get JWT token by login with Google")
+    public ResponseEntity<?> getJwtFromEmail(@RequestParam(value = "email", required = true) String email) {
+        if (email != null) {
+            JwtResponseDTO jwt = jwtService.getJwtFromEmail(email, 172800000L);
             if (jwt != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(jwt);
             }
@@ -106,7 +105,7 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found google token !");
     }
 
-    @PostMapping("/google-token/register")
+    @PostMapping("/google/register")
     @Operation(summary = "Create account partner for the first time login with Google")
     public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) {
         if (partnerDTO != null) {

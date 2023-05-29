@@ -19,12 +19,15 @@ public class JwtTokenProvider {
         String subject;
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
         //Tạo subject cho JWT
-        if(userDetails.getPartner()==null){
-            subject = userDetails.getAdmin().getUserName();
-        }else{
+        if (userDetails.getPartner() != null) {
             subject = userDetails.getPartner().getUserName();
+
+        } else if (userDetails.getAdmin() != null) {
+            subject = userDetails.getAdmin().getUserName();
+        } else {
+            return null;
         }
-        // Tạo chuỗi json web token từ id của user.
+        // Tạo chuỗi json web token từ user name của user.
         return Jwts.builder()
                 .setSubject(subject)
                 .setIssuedAt(now)
@@ -53,7 +56,7 @@ public class JwtTokenProvider {
             log.error("Unsupported JWT token");
         } catch (IllegalArgumentException ex) {
             log.error("JWT claims string is empty.");
-        } catch (SignatureException ex){
+        } catch (SignatureException ex) {
             log.error("Signature invalid");
         }
         return false;

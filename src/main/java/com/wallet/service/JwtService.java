@@ -12,6 +12,9 @@ import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.AdminMapper;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.service.interfaces.IJwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -54,34 +57,26 @@ public class JwtService implements IJwtService {
     @Override
     public String refreshJwtToken(String token, Long jwtExpiration) {
         String refreshToken;
+        String userName;
         try {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            String userName = jwtTokenProvider.getUserNameFromJWT(token);
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
             refreshToken = jwtTokenProvider.generateToken((CustomUserDetails) customUserDetailsService.loadUserByUsername(userName), jwtExpiration);
-        } catch (Exception e) {
-            return null;
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Expired JWT token");
         }
         return refreshToken;
     }
 
+
     @Override
-    public JwtResponseDTO getJwtFromGoogleToken(String googleToken, Long jwtExpiration) {
+    public JwtResponseDTO getJwtFromEmail(String email, Long jwtExpiration) {
         String jwt;
-        try {
-
-            GoogleIdToken.Payload payload = verifyGoogleToken(googleToken).getPayload();
-            String email = payload.getEmail();
-
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
             CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByEmail(email);
             jwt = jwtTokenProvider.generateToken(userDetails, jwtExpiration);
             JwtResponseDTO jwtResponseDTO = validJwtResponse(jwt, userDetails);
-
             return Objects.requireNonNullElseGet(jwtResponseDTO, () -> new JwtResponseDTO(null, new PartnerDTO(null, null, null, null, email, null, null, null, true, true), null));
-
-        } catch (Exception e) {
-            throw new InvalidParameterException("Invalid google token !");
-        }
     }
 
     @Override
