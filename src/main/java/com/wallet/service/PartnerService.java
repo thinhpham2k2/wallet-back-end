@@ -3,6 +3,7 @@ package com.wallet.service;
 import com.wallet.dto.JwtResponseDTO;
 import com.wallet.dto.PartnerDTO;
 import com.wallet.dto.PartnerRegisterDTO;
+import com.wallet.dto.PartnerUpdateDTO;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.entity.Partner;
 import com.wallet.exception.PartnerException;
@@ -11,6 +12,7 @@ import com.wallet.exception.dto.PartnerErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.mapper.PartnerRegisterMapper;
+import com.wallet.mapper.PartnerUpdateMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IPartnerService;
@@ -20,8 +22,9 @@ import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.security.InvalidParameterException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,10 +46,49 @@ public class PartnerService implements IPartnerService {
     }
 
     @Override
-    public Page<PartnerDTO> getAllPartner(boolean status ,Integer page) {
-        Pageable pageable = PageRequest.of(page == null ? 0 : page, 10).withSort(Sort.by("userName"));
-        Page<Partner> pageResult = partnerRepository.findPartnersByStatus(true, pageable);
+    public Page<PartnerDTO> getPartnerList(boolean status, String search, String sort, int page, int limit) {
+        if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
+        if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
+        List<Sort.Order> order = new ArrayList<>();
+        Set<String> sourceFieldList = getAllFields(new Partner().getClass());
+        String[] subSort = sort.split(",");
+        if(ifPropertpresent(sourceFieldList, subSort[0])) {
+            order.add(new Sort.Order(getSortDirection(subSort[1]), subSort[0]));
+        } else {
+            throw new InvalidParameterException(subSort[0] + " is not a propertied of Partner!");
+        }
+        Pageable pageable = PageRequest.of(page, limit).withSort(Sort.by(order));
+        Page<Partner> pageResult = partnerRepository.getPartnerList(true, search, pageable);
         return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
+    }
+
+    private static Set<String> getAllFields(final Class<?> type) {
+        Set<String> fields = new HashSet<>();
+        //loop the fields using Java Reflections
+        for (Field field : type.getDeclaredFields()) {
+            fields.add(field.getName());
+        }
+        //recursive call to getAllFields
+        if (type.getSuperclass() != null) {
+            fields.addAll(getAllFields(type.getSuperclass()));
+        }
+        return fields;
+    }
+
+    private Sort.Direction getSortDirection(String direction) {
+        if (direction.equals("asc")) {
+            return Sort.Direction.ASC;
+        } else if (direction.equals("desc")) {
+            return Sort.Direction.DESC;
+        }
+        return Sort.Direction.ASC;
+    }
+
+    private static boolean ifPropertpresent(final Set<String> properties, final String propertyName) {
+        if (properties.contains(propertyName)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -129,7 +171,7 @@ public class PartnerService implements IPartnerService {
     }
 
     @Override
-    public PartnerDTO updatePartner(PartnerDTO partnerDTO, Long id) {
+    public PartnerUpdateDTO updatePartner(PartnerUpdateDTO partnerDTO, Long id) {
         boolean flag = false;
         PartnerErrorUpdateDTO partnerErrorDTO = new PartnerErrorUpdateDTO();
 
@@ -163,7 +205,7 @@ public class PartnerService implements IPartnerService {
                 partnerOptional.get().setAddress(partnerDTO.getAddress());
 
                 Partner partner = partnerRepository.save(partnerOptional.get());
-                return PartnerMapper.INSTANCE.toDTO(partner);
+                return PartnerUpdateMapper.INSTANCE.toDTO(partner);
             } else {
                 throw new InvalidParameterException("Invalid partner !");
             }
