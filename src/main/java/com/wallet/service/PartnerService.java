@@ -3,6 +3,7 @@ package com.wallet.service;
 import com.wallet.dto.JwtResponseDTO;
 import com.wallet.dto.PartnerDTO;
 import com.wallet.dto.PartnerRegisterDTO;
+import com.wallet.dto.PartnerUpdateDTO;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.entity.Partner;
 import com.wallet.exception.PartnerException;
@@ -11,6 +12,7 @@ import com.wallet.exception.dto.PartnerErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.mapper.PartnerRegisterMapper;
+import com.wallet.mapper.PartnerUpdateMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IPartnerService;
@@ -20,8 +22,9 @@ import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.security.InvalidParameterException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,21 +46,59 @@ public class PartnerService implements IPartnerService {
     }
 
     @Override
-    public Page<PartnerDTO> getAllPartner(boolean status ,Integer page) {
-        Pageable pageable = PageRequest.of(page == null ? 0 : page, 10).withSort(Sort.by("userName"));
-        Page<Partner> pageResult = partnerRepository.findPartnersByStatus(true, pageable);
+    public Page<PartnerDTO> getPartnerList(boolean status, String search, String sort, int page, int limit) {
+        if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
+        if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
+        List<Sort.Order> order = new ArrayList<>();
+        Set<String> sourceFieldList = getAllFields(new Partner().getClass());
+        String[] subSort = sort.split(",");
+        if(ifPropertpresent(sourceFieldList, subSort[0])) {
+            order.add(new Sort.Order(getSortDirection(subSort[1]), subSort[0]));
+        } else {
+            throw new InvalidParameterException(subSort[0] + " is not a propertied of Partner!");
+        }
+        Pageable pageable = PageRequest.of(page, limit).withSort(Sort.by(order));
+        Page<Partner> pageResult = partnerRepository.getPartnerList(true, search, pageable);
         return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
+    }
+
+    private static Set<String> getAllFields(final Class<?> type) {
+        Set<String> fields = new HashSet<>();
+        //loop the fields using Java Reflections
+        for (Field field : type.getDeclaredFields()) {
+            fields.add(field.getName());
+        }
+        //recursive call to getAllFields
+        if (type.getSuperclass() != null) {
+            fields.addAll(getAllFields(type.getSuperclass()));
+        }
+        return fields;
+    }
+
+    private Sort.Direction getSortDirection(String direction) {
+        if (direction.equals("asc")) {
+            return Sort.Direction.ASC;
+        } else if (direction.equals("desc")) {
+            return Sort.Direction.DESC;
+        }
+        return Sort.Direction.ASC;
+    }
+
+    private static boolean ifPropertpresent(final Set<String> properties, final String propertyName) {
+        if (properties.contains(propertyName)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     public JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration) {
         boolean flag = false;
-        PartnerRegisterDTO partnerDTO = partnerRegisterDTO;
         PartnerErrorDTO partnerErrorDTO = new PartnerErrorDTO();
 
         //Validate User Name
-        if (!partnerDTO.getUserName().isBlank()) {
-            if (partnerRepository.existsPartnerByUserName(partnerDTO.getUserName()) || adminRepository.existsAdminByUserName(partnerDTO.getUserName())) {
+        if (!partnerRegisterDTO.getUserName().isBlank()) {
+            if (partnerRepository.existsPartnerByUserName(partnerRegisterDTO.getUserName()) || adminRepository.existsAdminByUserName(partnerRegisterDTO.getUserName())) {
                 flag = true;
                 partnerErrorDTO.setUserName("Used user name !");
             }
@@ -67,8 +108,8 @@ public class PartnerService implements IPartnerService {
         }
 
         //Validate Email
-        if (!partnerDTO.getEmail().isBlank()) {
-            if (partnerRepository.existsPartnerByEmail(partnerDTO.getEmail()) || adminRepository.existsAdminByEmail(partnerDTO.getEmail())) {
+        if (!partnerRegisterDTO.getEmail().isBlank()) {
+            if (partnerRepository.existsPartnerByEmail(partnerRegisterDTO.getEmail()) || adminRepository.existsAdminByEmail(partnerRegisterDTO.getEmail())) {
                 flag = true;
                 partnerErrorDTO.setEmail("Used email !");
             }
@@ -78,8 +119,8 @@ public class PartnerService implements IPartnerService {
         }
 
         //Validate Code
-        if (!partnerDTO.getCode().isBlank()) {
-            if (partnerRepository.existsPartnerByCode(partnerDTO.getCode())) {
+        if (!partnerRegisterDTO.getCode().isBlank()) {
+            if (partnerRepository.existsPartnerByCode(partnerRegisterDTO.getCode())) {
                 flag = true;
                 partnerErrorDTO.setCode("Used code !");
             }
@@ -89,13 +130,13 @@ public class PartnerService implements IPartnerService {
         }
 
         //Validate Full name
-        if (partnerDTO.getFullName().isBlank()) {
+        if (partnerRegisterDTO.getFullName().isBlank()) {
             flag = true;
             partnerErrorDTO.setFullName("Full name mustn't be blank !");
         }
 
         //Validate Phone
-        if (partnerDTO.getPhone().length() > 17) {
+        if (partnerRegisterDTO.getPhone().length() > 17) {
             flag = true;
             partnerErrorDTO.setPhone("Phone number length must be 17 characters or less !");
         }
@@ -113,7 +154,7 @@ public class PartnerService implements IPartnerService {
             throw new PartnerException(partnerErrorDTO, null);
         } else {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            Partner partner = PartnerRegisterMapper.INSTANCE.toEntity(partnerDTO);
+            Partner partner = PartnerRegisterMapper.INSTANCE.toEntity(partnerRegisterDTO);
             partner.setId(null);
             partner.setState(true);
             partner.setStatus(true);
@@ -130,7 +171,7 @@ public class PartnerService implements IPartnerService {
     }
 
     @Override
-    public PartnerDTO updatePartner(PartnerDTO partnerDTO, Long id) {
+    public PartnerUpdateDTO updatePartner(PartnerUpdateDTO partnerDTO, Long id) {
         boolean flag = false;
         PartnerErrorUpdateDTO partnerErrorDTO = new PartnerErrorUpdateDTO();
 
@@ -164,7 +205,7 @@ public class PartnerService implements IPartnerService {
                 partnerOptional.get().setAddress(partnerDTO.getAddress());
 
                 Partner partner = partnerRepository.save(partnerOptional.get());
-                return PartnerMapper.INSTANCE.toDTO(partner);
+                return PartnerUpdateMapper.INSTANCE.toDTO(partner);
             } else {
                 throw new InvalidParameterException("Invalid partner !");
             }

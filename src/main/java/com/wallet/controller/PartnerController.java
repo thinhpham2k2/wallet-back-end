@@ -3,6 +3,7 @@ package com.wallet.controller;
 import com.wallet.dto.JwtResponseDTO;
 import com.wallet.dto.PartnerDTO;
 import com.wallet.dto.PartnerRegisterDTO;
+import com.wallet.dto.PartnerUpdateDTO;
 import com.wallet.service.interfaces.IPartnerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.security.InvalidParameterException;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,13 +33,16 @@ public class PartnerController {
     private final IPartnerService partnerService;
 
     @GetMapping("")
-//    @Secured({ADMIN})
+    @Secured({ADMIN})
     @Operation(summary = "Get partner list")
     public ResponseEntity<?> getAllPartner(
-            @RequestParam(required = false) Integer page
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "0") Optional<Integer> page,
+            @RequestParam(defaultValue = "fullName,desc") String sort,
+            @RequestParam(defaultValue = "10") Optional<Integer> limit
     )
             throws MethodArgumentTypeMismatchException {
-        Page<PartnerDTO> partners = partnerService.getAllPartner(true, page);
+        Page<PartnerDTO> partners = partnerService.getPartnerList(true, search, sort, page.orElse(0), limit.orElse(10));
         if (!partners.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(partners);
         } else {
@@ -71,8 +76,8 @@ public class PartnerController {
     @PutMapping("/{id}")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Update a partner account")
-    public ResponseEntity<?> updatePartner(@RequestBody PartnerDTO partnerDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
-        PartnerDTO partner = partnerService.updatePartner(partnerDTO, id);
+    public ResponseEntity<?> updatePartner(@RequestBody PartnerUpdateDTO partnerDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
+        PartnerUpdateDTO partner = partnerService.updatePartner(partnerDTO, id);
         return ResponseEntity.status(HttpStatus.OK).body(partner);
     }
 
