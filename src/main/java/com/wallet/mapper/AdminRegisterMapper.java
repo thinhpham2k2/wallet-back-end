@@ -1,6 +1,5 @@
 package com.wallet.mapper;
 
-import com.wallet.dto.AdminDTO;
 import com.wallet.dto.AdminRegisterDTO;
 import com.wallet.entity.Admin;
 import org.mapstruct.Mapper;
