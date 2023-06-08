@@ -37,8 +37,11 @@ public class PartnerController {
     @Operation(summary = "Get partner list")
     public ResponseEntity<?> getAllPartner(
             @RequestParam(defaultValue = "") String search,
+
             @RequestParam(defaultValue = "0") Optional<Integer> page,
+
             @RequestParam(defaultValue = "fullName,desc") String sort,
+
             @RequestParam(defaultValue = "10") Optional<Integer> limit
     )
             throws MethodArgumentTypeMismatchException {

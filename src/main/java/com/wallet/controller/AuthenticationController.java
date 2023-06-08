@@ -21,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,7 +46,7 @@ public class AuthenticationController {
 
     @PostMapping("/sign-in")
     @Operation(summary = "Login to system")
-    public ResponseEntity<?> loginAccount(@RequestBody LoginFormDTO loginFormDTO) {
+    public ResponseEntity<?> loginAccount(@RequestBody LoginFormDTO loginFormDTO) throws MethodArgumentTypeMismatchException{
         String userName = loginFormDTO.getUserName();
         String pass = loginFormDTO.getPassword();
 
@@ -75,7 +76,7 @@ public class AuthenticationController {
     @GetMapping("/jwt/refresher")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Refresh jwt token")
-    public ResponseEntity<?> refreshTokenByJwt(HttpServletRequest request) {
+    public ResponseEntity<?> refreshTokenByJwt(HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             String refreshToken = jwtService.refreshJwtToken(jwt, 172800000L);
@@ -95,7 +96,7 @@ public class AuthenticationController {
 
     @PostMapping("/google")
     @Operation(summary = "Login with Google")
-    public ResponseEntity<?> getJwtFromEmail(@RequestParam(value = "email", required = true) String email) {
+    public ResponseEntity<?> getJwtFromEmail(@RequestParam(value = "email", required = true) String email) throws MethodArgumentTypeMismatchException{
         if (email != null) {
             JwtResponseDTO jwt = jwtService.getJwtFromEmail(email, 17280000000L);
             if (jwt != null) {
@@ -108,7 +109,7 @@ public class AuthenticationController {
 
     @PostMapping("/google/register")
     @Operation(summary = "Create account partner for the first time login with Google")
-    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) {
+    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) throws MethodArgumentTypeMismatchException{
         if (partnerDTO != null) {
             JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 17280000000L);
             if (jwtResponseDTO.getPartnerDTO() != null) {

@@ -50,7 +50,7 @@ public class PartnerService implements IPartnerService {
         if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
         if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
         List<Sort.Order> order = new ArrayList<>();
-        Set<String> sourceFieldList = getAllFields(new Partner().getClass());
+        Set<String> sourceFieldList = getAllFields(Partner.class);
         String[] subSort = sort.split(",");
         if(ifPropertpresent(sourceFieldList, subSort[0])) {
             order.add(new Sort.Order(getSortDirection(subSort[1]), subSort[0]));
@@ -85,10 +85,7 @@ public class PartnerService implements IPartnerService {
     }
 
     private static boolean ifPropertpresent(final Set<String> properties, final String propertyName) {
-        if (properties.contains(propertyName)) {
-            return true;
-        }
-        return false;
+        return properties.contains(propertyName);
     }
 
     @Override
