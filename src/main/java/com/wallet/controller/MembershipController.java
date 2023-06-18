@@ -36,26 +36,17 @@ public class MembershipController {
     @GetMapping("")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Get membership list")
-    public ResponseEntity<?> getAllCustomer(
-            @RequestParam(defaultValue = "") String search,
+    public ResponseEntity<?> getAllCustomer(@RequestParam(defaultValue = "") String search,
 
-            @RequestParam(defaultValue = "")
-            @Parameter(
-                    description = "<b>Filter by partner ID<b>"
-            ) List<Long> partner,
+                                            @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
 
-            @RequestParam(defaultValue = "")
-            @Parameter(
-                    description = "<b>Filter by program ID<b>"
-            ) List<Long> program,
+                                            @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by program ID<b>") List<Long> program,
 
-            @RequestParam(defaultValue = "0") Optional<Integer> page,
+                                            @RequestParam(defaultValue = "0") Optional<Integer> page,
 
-            @RequestParam(defaultValue = "customer,desc") String sort,
+                                            @RequestParam(defaultValue = "customer,desc") String sort,
 
-            @RequestParam(defaultValue = "10") Optional<Integer> limit
-    )
-            throws MethodArgumentTypeMismatchException {
+                                            @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
         Page<MembershipDTO> memberships = membershipService.getMemberList(true, partner, program, search, sort, page.orElse(0), limit.orElse(10));
         if (!memberships.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(memberships);

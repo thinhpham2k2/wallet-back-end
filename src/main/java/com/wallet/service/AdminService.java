@@ -2,18 +2,22 @@ package com.wallet.service;
 
 import com.wallet.dto.AdminDTO;
 import com.wallet.dto.AdminRegisterDTO;
+import com.wallet.dto.AdminUpdateDTO;
 import com.wallet.dto.JwtResponseDTO;
 import com.wallet.entity.Admin;
 import com.wallet.entity.CustomUserDetails;
+import com.wallet.entity.Partner;
 import com.wallet.exception.AdminException;
 import com.wallet.exception.dto.AdminErrorDTO;
 import com.wallet.exception.dto.AdminErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.AdminMapper;
 import com.wallet.mapper.AdminRegisterMapper;
+import com.wallet.mapper.PartnerMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IAdminService;
+import com.wallet.service.interfaces.IPagingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -24,13 +28,18 @@ import org.springframework.stereotype.Service;
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class AdminService implements IAdminService {
+
+    private final IPagingService pagingService;
 
     private final AdminRepository adminRepository;
 
@@ -75,7 +84,7 @@ public class AdminService implements IAdminService {
     }
 
     @Override
-    public AdminDTO updateAdmin(AdminDTO adminDTO, Long id) {
+    public AdminDTO updateAdmin(AdminUpdateDTO adminDTO, Long id) {
         boolean flag = false;
         AdminErrorUpdateDTO errorUpdateDTO = new AdminErrorUpdateDTO();
 
@@ -127,6 +136,7 @@ public class AdminService implements IAdminService {
 
                 adminOptional.get().setFullName(adminDTO.getFullName());
                 adminOptional.get().setDob(adminDTO.getDob());
+                adminOptional.get().setImage(adminDTO.getImage());
                 adminOptional.get().setPhone(adminDTO.getPhone());
 
                 Admin admin = adminRepository.save(adminOptional.get());
@@ -215,4 +225,22 @@ public class AdminService implements IAdminService {
             return new JwtResponseDTO(jwtTokenProvider.generateToken((CustomUserDetails) customUserDetailsService.loadUserByAdmin(adminDTO1), jwtExpiration), null, adminDTO1);
         }
     }
+
+    @Override
+    public Page<AdminDTO> getAdminList(boolean status, String search, String sort, int page, int limit) {
+        if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
+        if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
+        List<Sort.Order> order = new ArrayList<>();
+        Set<String> sourceFieldList = pagingService.getAllFields(Admin.class);
+        String[] subSort = sort.split(",");
+        if(pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
+            order.add(new Sort.Order(pagingService.getSortDirection(subSort[1]), subSort[0]));
+        } else {
+            throw new InvalidParameterException(subSort[0] + " is not a propertied of Partner!");
+        }
+        Pageable pageable = PageRequest.of(page, limit).withSort(Sort.by(order));
+        Page<Admin> pageResult = adminRepository.getAdminList(true, search, pageable);
+        return new PageImpl<>(pageResult.getContent().stream().map(AdminMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
+    }
+
 }

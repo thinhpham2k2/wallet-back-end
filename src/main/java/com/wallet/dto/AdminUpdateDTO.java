@@ -1,20 +1,19 @@
 package com.wallet.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartnerUpdateDTO {
+public class AdminUpdateDTO {
 
     private String fullName;
+    private LocalDate dob;
     private String image;
     private String phone;
-    private String address;
-    private Boolean state;
 
 }
