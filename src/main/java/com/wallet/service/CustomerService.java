@@ -11,10 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,9 +22,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerService implements ICustomerService {
 
-    private final IPagingService pagingService;
-
     private final CustomerRepository customerRepository;
+
+    private final IPagingService pagingService;
 
     @Override
     public Page<CustomerDTO> getCustomerList(boolean status, List<Long> partnerId, String search, String sort, int page, int limit) {
@@ -51,5 +49,4 @@ public class CustomerService implements ICustomerService {
         }
         return property;
     }
-
 }

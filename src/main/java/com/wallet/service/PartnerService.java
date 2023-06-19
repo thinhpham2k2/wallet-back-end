@@ -23,17 +23,17 @@ import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
 import java.security.InvalidParameterException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class PartnerService implements IPartnerService {
-
-    private final IPagingService pagingService;
 
     private final PartnerRepository partnerRepository;
 
@@ -42,6 +42,8 @@ public class PartnerService implements IPartnerService {
     private final PasswordEncoder passwordEncoder;
 
     private final CustomUserDetailsService customUserDetailsService;
+
+    private final IPagingService pagingService;
 
     @Override
     public PartnerDTO getByUsernameAndStatus(String userName, boolean status) {

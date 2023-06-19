@@ -6,14 +6,12 @@ import com.wallet.dto.AdminUpdateDTO;
 import com.wallet.dto.JwtResponseDTO;
 import com.wallet.entity.Admin;
 import com.wallet.entity.CustomUserDetails;
-import com.wallet.entity.Partner;
 import com.wallet.exception.AdminException;
 import com.wallet.exception.dto.AdminErrorDTO;
 import com.wallet.exception.dto.AdminErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.AdminMapper;
 import com.wallet.mapper.AdminRegisterMapper;
-import com.wallet.mapper.PartnerMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IAdminService;
@@ -39,8 +37,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminService implements IAdminService {
 
-    private final IPagingService pagingService;
-
     private final AdminRepository adminRepository;
 
     private final PartnerRepository partnerRepository;
@@ -48,6 +44,8 @@ public class AdminService implements IAdminService {
     private final PasswordEncoder passwordEncoder;
 
     private final CustomUserDetailsService customUserDetailsService;
+
+    private final IPagingService pagingService;
 
     @Override
     public AdminDTO getByUsernameAndStatus(String userName, boolean status) {

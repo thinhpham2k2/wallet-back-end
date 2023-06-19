@@ -5,7 +5,6 @@ import com.wallet.dto.LoginFormDTO;
 import com.wallet.dto.PartnerRegisterDTO;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.jwt.JwtTokenProvider;
-import com.wallet.service.interfaces.IAdminService;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IPartnerService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,8 +32,6 @@ public class AuthenticationController {
     public static final String ADMIN = "ROLE_Admin";
 
     public static final String PARTNER = "ROLE_Partner";
-
-    private final IAdminService adminService;
 
     private final IPartnerService partnerService;
 
