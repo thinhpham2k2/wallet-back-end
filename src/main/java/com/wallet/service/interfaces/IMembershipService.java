@@ -10,5 +10,7 @@ public interface IMembershipService {
 
     Page<MembershipDTO> getMemberList(boolean status, List<Long> partnerId, List<Long> programId, String search, String sort, int page, int limit);
 
+    Page<MembershipDTO> getMemberListForPartner(boolean status, String token, List<Long> programId, String search, String sort, int page, int limit);
+
     CustomerMembershipDTO getCustomerMembershipInform(String token, String customerId);
 }

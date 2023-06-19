@@ -39,11 +39,9 @@ public class MembershipController {
     private final IJwtService jwtService;
 
     @GetMapping("")
-    @Secured({ADMIN})
-    @Operation(summary = "Get membership list (Admin API)")
+    @Secured({PARTNER})
+    @Operation(summary = "Get membership list")
     public ResponseEntity<?> getAllMembership(@RequestParam(defaultValue = "") String search,
-
-                                              @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
 
                                               @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by program ID<b>") List<Long> program,
 
@@ -51,8 +49,10 @@ public class MembershipController {
 
                                               @RequestParam(defaultValue = "customer,desc") String sort,
 
-                                              @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
-        Page<MembershipDTO> memberships = membershipService.getMemberList(true, partner, program, search, sort, page.orElse(0), limit.orElse(10));
+                                              @RequestParam(defaultValue = "10") Optional<Integer> limit,
+                                              HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        Page<MembershipDTO> memberships = membershipService.getMemberListForPartner(true, jwt, program, search, sort, page.orElse(0), limit.orElse(10));
         if (!memberships.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(memberships);
         } else {

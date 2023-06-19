@@ -1,9 +1,7 @@
 package com.wallet.controller;
 
 import com.wallet.dto.*;
-import com.wallet.service.interfaces.IAdminService;
-import com.wallet.service.interfaces.IPartnerService;
-import com.wallet.service.interfaces.IProgramService;
+import com.wallet.service.interfaces.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,6 +32,52 @@ public class AdminController {
     private final IPartnerService partnerService;
 
     private final IProgramService programService;
+
+    private final IMembershipService membershipService;
+
+    private final ICustomerService customerService;
+
+    @GetMapping("/customers")
+    @Secured({ADMIN})
+    @Operation(summary = "Get customer list")
+    public ResponseEntity<?> getAllCustomer(@RequestParam(defaultValue = "") String search,
+
+                                            @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
+
+                                            @RequestParam(defaultValue = "0") Optional<Integer> page,
+
+                                            @RequestParam(defaultValue = "fullName,desc") String sort,
+
+                                            @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
+        Page<CustomerDTO> customer = customerService.getCustomerList(true, partner, search, sort, page.orElse(0), limit.orElse(10));
+        if (!customer.getContent().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(customer);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found customer list !");
+        }
+    }
+
+    @GetMapping("/members")
+    @Secured({ADMIN})
+    @Operation(summary = "Get membership list")
+    public ResponseEntity<?> getAllMembership(@RequestParam(defaultValue = "") String search,
+
+                                              @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
+
+                                              @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by program ID<b>") List<Long> program,
+
+                                              @RequestParam(defaultValue = "0") Optional<Integer> page,
+
+                                              @RequestParam(defaultValue = "customer,desc") String sort,
+
+                                              @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
+        Page<MembershipDTO> memberships = membershipService.getMemberList(true, partner, program, search, sort, page.orElse(0), limit.orElse(10));
+        if (!memberships.getContent().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(memberships);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership list !");
+        }
+    }
 
     @GetMapping("/programs")
     @Secured({ADMIN})

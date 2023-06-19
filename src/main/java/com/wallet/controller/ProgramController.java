@@ -40,7 +40,7 @@ public class ProgramController {
     @GetMapping("")
     @Secured({PARTNER})
     @Operation(summary = "Get program list")
-    public ResponseEntity<?> getAllCustomer(@RequestParam(defaultValue = "") String search,
+    public ResponseEntity<?> getAllProgram(@RequestParam(defaultValue = "") String search,
 
                                             @RequestParam(defaultValue = "0") Optional<Integer> page,
 
