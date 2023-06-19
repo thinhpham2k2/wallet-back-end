@@ -1,6 +1,7 @@
 package com.wallet.service.interfaces;
 
 import com.wallet.dto.CustomerDTO;
+import com.wallet.dto.CustomerExtraDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface ICustomerService {
 
     Page<CustomerDTO> getCustomerListForPartner(boolean status, String token, String search, String sort, int page, int limit);
 
+    CustomerExtraDTO getCustomerById(boolean status, long id);
 }

@@ -11,9 +11,10 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerExtraDTO {
+public class ProgramExtraDTO {
 
-    private CustomerDTO customer;
-    private List<MembershipDTO> membershipList;
-
+    private int numOfMembers;
+    private ProgramDTO program;
+    private PartnerDTO partner;
+    private List<LevelDTO> levelList;
 }
