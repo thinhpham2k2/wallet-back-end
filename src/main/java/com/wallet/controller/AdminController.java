@@ -99,6 +99,18 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/partners/{id}")
+    @Secured({ADMIN})
+    @Operation(summary = "Get partner by id")
+    public ResponseEntity<?> getPartnerById(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
+        PartnerExtraDTO partner = partnerService.getPartnerExtra(id, true);
+        if (partner != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(partner);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found partner !");
+        }
+    }
+
     @GetMapping("/partners")
     @Secured({ADMIN})
     @Operation(summary = "Get partner list")

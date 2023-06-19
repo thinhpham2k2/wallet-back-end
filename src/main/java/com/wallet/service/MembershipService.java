@@ -112,7 +112,7 @@ public class MembershipService implements IMembershipService {
                 customerMember.setLevelList(levelList.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             }
 
-            List<Wallet> wallets = walletRepository.getWalletsByStatusAndMembershipId(true, membership.getId());
+            List<Wallet> wallets = membership.getWalletList().stream().filter(w -> w.getStatus().equals(true)).collect(Collectors.toList());
             if (!wallets.isEmpty()) {
                customerMember.setWalletList(wallets.stream().map(WalletMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             }
