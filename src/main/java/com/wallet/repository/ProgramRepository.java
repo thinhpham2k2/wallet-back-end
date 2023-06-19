@@ -17,4 +17,11 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
             "OR p.programName LIKE %?3% " +
             "OR p.description LIKE %?3%)")
     Page<Program> getProgramList(boolean status, List<Long> partnerId, String search, Pageable pageable);
+
+    @Query("SELECT p FROM Program p " +
+            "WHERE p.status = ?1 " +
+            "AND p.partner.userName = ?2 " +
+            "AND (p.programName LIKE %?3% " +
+            "OR p.description LIKE %?3%)")
+    Page<Program> getProgramListForPartner(boolean status, String userName, String search, Pageable pageable);
 }

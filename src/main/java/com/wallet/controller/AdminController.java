@@ -1,11 +1,11 @@
 package com.wallet.controller;
 
-import com.wallet.dto.AdminDTO;
-import com.wallet.dto.AdminRegisterDTO;
-import com.wallet.dto.AdminUpdateDTO;
-import com.wallet.dto.JwtResponseDTO;
+import com.wallet.dto.*;
 import com.wallet.service.interfaces.IAdminService;
+import com.wallet.service.interfaces.IPartnerService;
+import com.wallet.service.interfaces.IProgramService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,22 +17,63 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.security.InvalidParameterException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Admin API")
-@RequestMapping("/api/admins")
+@RequestMapping("/admin/api")
 @SecurityRequirement(name = "Authorization")
 public class AdminController {
 
     public static final String ADMIN = "ROLE_Admin";
 
-    public static final String PARTNER = "ROLE_Partner";
-
     private final IAdminService adminService;
 
-    @GetMapping("{id}")
+    private final IPartnerService partnerService;
+
+    private final IProgramService programService;
+
+    @GetMapping("/programs")
+    @Secured({ADMIN})
+    @Operation(summary = "Get program list")
+    public ResponseEntity<?> getAllProgram(@RequestParam(defaultValue = "") String search,
+
+                                            @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
+
+                                            @RequestParam(defaultValue = "0") Optional<Integer> page,
+
+                                            @RequestParam(defaultValue = "programName,desc") String sort,
+
+                                            @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
+        Page<ProgramDTO> program = programService.getProgramList(true, partner, search, sort, page.orElse(0), limit.orElse(10));
+        if (!program.getContent().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(program);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found program list !");
+        }
+    }
+
+    @GetMapping("/partners")
+    @Secured({ADMIN})
+    @Operation(summary = "Get partner list")
+    public ResponseEntity<?> getAllPartner(@RequestParam(defaultValue = "") String search,
+
+                                           @RequestParam(defaultValue = "0") Optional<Integer> page,
+
+                                           @RequestParam(defaultValue = "fullName,desc") String sort,
+
+                                           @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
+        Page<PartnerDTO> partners = partnerService.getPartnerList(true, search, sort, page.orElse(0), limit.orElse(10));
+        if (!partners.getContent().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(partners);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found partner list !");
+        }
+    }
+
+    @GetMapping("/admins/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Get admin by id")
     public ResponseEntity<?> getAdminById(@PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
@@ -44,7 +85,7 @@ public class AdminController {
         }
     }
 
-    @GetMapping("")
+    @GetMapping("/admins")
     @Secured({ADMIN})
     @Operation(summary = "Get admin list")
     public ResponseEntity<?> getAllAdmin(@RequestParam(defaultValue = "") String search,
@@ -62,7 +103,7 @@ public class AdminController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admins/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Delete a admin account")
     public ResponseEntity<?> deleteAdmin(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
@@ -74,7 +115,7 @@ public class AdminController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admins/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Update a admin account")
     public ResponseEntity<?> updatePartner(@RequestBody AdminUpdateDTO adminDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
@@ -82,7 +123,7 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.OK).body(admin);
     }
 
-    @PostMapping("")
+    @PostMapping("/admins")
     @Operation(summary = "Create a admin account")
     public ResponseEntity<?> registerPartner(@RequestBody AdminRegisterDTO adminRegisterDTO) throws MethodArgumentTypeMismatchException {
         JwtResponseDTO jwtResponseDTO = adminService.createAdmin(adminRegisterDTO, 17280000000L);

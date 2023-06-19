@@ -22,7 +22,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Partner API")
-@RequestMapping("/api/partners")
+@RequestMapping("/partner/api/partners")
 @SecurityRequirement(name = "Authorization")
 public class PartnerController {
 
@@ -31,24 +31,6 @@ public class PartnerController {
     public static final String PARTNER = "ROLE_Partner";
 
     private final IPartnerService partnerService;
-
-    @GetMapping("")
-    @Secured({ADMIN})
-    @Operation(summary = "Get partner list")
-    public ResponseEntity<?> getAllPartner(@RequestParam(defaultValue = "") String search,
-
-                                           @RequestParam(defaultValue = "0") Optional<Integer> page,
-
-                                           @RequestParam(defaultValue = "fullName,desc") String sort,
-
-                                           @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
-        Page<PartnerDTO> partners = partnerService.getPartnerList(true, search, sort, page.orElse(0), limit.orElse(10));
-        if (!partners.getContent().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.OK).body(partners);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found partner list !");
-        }
-    }
 
     @GetMapping("/{id}")
     @Secured({ADMIN, PARTNER})
@@ -83,7 +65,7 @@ public class PartnerController {
 
     @DeleteMapping("/{id}")
     @Secured({ADMIN})
-    @Operation(summary = "Delete a partner account")
+    @Operation(summary = "Delete a partner account (Admin API)")
     public ResponseEntity<?> deletePartner(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
         if (id == null) {
             throw new InvalidParameterException("Invalid partner id");

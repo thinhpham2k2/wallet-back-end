@@ -23,7 +23,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Customer API")
-@RequestMapping("/api/customers")
+@RequestMapping("/partner/api/customers")
 @SecurityRequirement(name = "Authorization")
 public class CustomerController {
 
@@ -34,8 +34,8 @@ public class CustomerController {
     private final ICustomerService customerService;
 
     @GetMapping("")
-    @Secured({ADMIN, PARTNER})
-    @Operation(summary = "Get customer list")
+    @Secured({ADMIN})
+    @Operation(summary = "Get customer list (Admin API)")
     public ResponseEntity<?> getAllCustomer(@RequestParam(defaultValue = "") String search,
 
                                             @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Program level API")
-@RequestMapping("/api/program-levels")
+@RequestMapping("/partner/api/program-levels")
 @SecurityRequirement(name = "Authorization")
 public class ProgramLevelController {
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Wallet API")
-@RequestMapping("/api/wallets")
+@RequestMapping("/partner/api/wallets")
 @SecurityRequirement(name = "Authorization")
 public class WalletController {
 
