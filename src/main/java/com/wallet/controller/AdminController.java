@@ -2,6 +2,7 @@ package com.wallet.controller;
 
 import com.wallet.dto.AdminDTO;
 import com.wallet.dto.AdminRegisterDTO;
+import com.wallet.dto.AdminUpdateDTO;
 import com.wallet.dto.JwtResponseDTO;
 import com.wallet.service.interfaces.IAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.security.InvalidParameterException;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,8 +47,14 @@ public class AdminController {
     @GetMapping("")
     @Secured({ADMIN})
     @Operation(summary = "Get admin list")
-    public ResponseEntity<?> getAllAdmin(@RequestParam(required = false) Integer page) throws MethodArgumentTypeMismatchException {
-        Page<AdminDTO> pageResult = adminService.getAllAdmin(true, page);
+    public ResponseEntity<?> getAllAdmin(@RequestParam(defaultValue = "") String search,
+
+                                         @RequestParam(defaultValue = "0") Optional<Integer> page,
+
+                                         @RequestParam(defaultValue = "fullName,desc") String sort,
+
+                                         @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
+        Page<AdminDTO> pageResult = adminService.getAdminList(true, search, sort, page.orElse(0), limit.orElse(10));
         if (!pageResult.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(pageResult);
         } else {
@@ -69,7 +77,7 @@ public class AdminController {
     @PutMapping("/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Update a admin account")
-    public ResponseEntity<?> updatePartner(@RequestBody AdminDTO adminDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
+    public ResponseEntity<?> updatePartner(@RequestBody AdminUpdateDTO adminDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
         AdminDTO admin = adminService.updateAdmin(adminDTO, id);
         return ResponseEntity.status(HttpStatus.OK).body(admin);
     }

@@ -35,16 +35,13 @@ public class PartnerController {
     @GetMapping("")
     @Secured({ADMIN})
     @Operation(summary = "Get partner list")
-    public ResponseEntity<?> getAllPartner(
-            @RequestParam(defaultValue = "") String search,
+    public ResponseEntity<?> getAllPartner(@RequestParam(defaultValue = "") String search,
 
-            @RequestParam(defaultValue = "0") Optional<Integer> page,
+                                           @RequestParam(defaultValue = "0") Optional<Integer> page,
 
-            @RequestParam(defaultValue = "fullName,desc") String sort,
+                                           @RequestParam(defaultValue = "fullName,desc") String sort,
 
-            @RequestParam(defaultValue = "10") Optional<Integer> limit
-    )
-            throws MethodArgumentTypeMismatchException {
+                                           @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
         Page<PartnerDTO> partners = partnerService.getPartnerList(true, search, sort, page.orElse(0), limit.orElse(10));
         if (!partners.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(partners);
@@ -87,7 +84,7 @@ public class PartnerController {
     @DeleteMapping("/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Delete a partner account")
-    public ResponseEntity<?> deletePartner(@PathVariable(value = "id", required = false) Long id ) throws MethodArgumentTypeMismatchException {
+    public ResponseEntity<?> deletePartner(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
         if (id == null) {
             throw new InvalidParameterException("Invalid partner id");
         } else {

@@ -15,6 +15,13 @@ public interface PartnerUpdateMapper {
     PartnerUpdateDTO toDTO(Partner entity);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userName", ignore = true)
+    @Mapping(target = "code", ignore = true)
+    @Mapping(target = "email", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "customerList", ignore = true)
+    @Mapping(target = "programList", ignore = true)
+    @Mapping(target = "requestList", ignore = true)
     Partner toEntity(PartnerUpdateDTO dto);
 }

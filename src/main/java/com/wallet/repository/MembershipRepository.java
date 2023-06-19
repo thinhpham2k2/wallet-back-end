@@ -20,4 +20,12 @@ public interface MembershipRepository extends JpaRepository<Membership, Long> {
             "OR m.customer.partner.fullName LIKE %?4% " +
             "OR m.customer.partner.code LIKE %?4%)")
     Page<Membership> getMemberList(boolean status, List<Long> partnerId, List<Long> programId, String search, Pageable pageable);
+
+    @Query("SELECT m FROM Membership m " +
+            "WHERE m.status = ?1 " +
+            "AND m.program.status = ?1 " +
+            "AND m.program.token = ?2 " +
+            "AND m.customer.status = ?1 " +
+            "AND m.customer.customerId = ?3")
+    Membership getCustomerMembershipInform(boolean status, String token, String customerId);
 }

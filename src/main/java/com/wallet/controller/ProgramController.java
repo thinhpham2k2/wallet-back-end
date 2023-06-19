@@ -36,21 +36,15 @@ public class ProgramController {
     @GetMapping("")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Get program list")
-    public ResponseEntity<?> getAllCustomer(
-            @RequestParam(defaultValue = "") String search,
+    public ResponseEntity<?> getAllCustomer(@RequestParam(defaultValue = "") String search,
 
-            @RequestParam(defaultValue = "")
-            @Parameter(
-                    description = "<b>Filter by partner ID<b>"
-            ) List<Long> partner,
+                                            @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
 
-            @RequestParam(defaultValue = "0") Optional<Integer> page,
+                                            @RequestParam(defaultValue = "0") Optional<Integer> page,
 
-            @RequestParam(defaultValue = "programName,desc") String sort,
+                                            @RequestParam(defaultValue = "programName,desc") String sort,
 
-            @RequestParam(defaultValue = "10") Optional<Integer> limit
-    )
-            throws MethodArgumentTypeMismatchException {
+                                            @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
         Page<ProgramDTO> program = programService.getProgramList(true, partner, search, sort, page.orElse(0), limit.orElse(10));
         if (!program.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(program);
