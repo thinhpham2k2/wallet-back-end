@@ -9,4 +9,6 @@ public interface ICustomerService {
 
     Page<CustomerDTO> getCustomerList(boolean status, List<Long> partnerId, String search, String sort, int page, int limit);
 
+    Page<CustomerDTO> getCustomerListForPartner(boolean status, String token, String search, String sort, int page, int limit);
+
 }

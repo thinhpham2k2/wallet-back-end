@@ -20,4 +20,13 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             "OR c.email LIKE %?3% " +
             "OR c.phone LIKE %?3%)")
     Page<Customer> getCustomerList(boolean status, List<Long> partnerId, String search, Pageable pageable);
+
+    @Query("SELECT c FROM Customer c " +
+            "WHERE c.status = ?1 " +
+            "AND c.partner.userName = ?2 " +
+            "AND (c.partner.fullName LIKE %?3% " +
+            "OR c.fullName LIKE %?3% " +
+            "OR c.email LIKE %?3% " +
+            "OR c.phone LIKE %?3%)")
+    Page<Customer> getCustomerListForPartner(boolean status, String userName, String search, Pageable pageable);
 }

@@ -1,9 +1,6 @@
 package com.wallet.service;
 
-import com.wallet.dto.JwtResponseDTO;
-import com.wallet.dto.PartnerDTO;
-import com.wallet.dto.PartnerRegisterDTO;
-import com.wallet.dto.PartnerUpdateDTO;
+import com.wallet.dto.*;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.entity.Partner;
 import com.wallet.exception.PartnerException;
@@ -13,8 +10,10 @@ import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.mapper.PartnerRegisterMapper;
 import com.wallet.mapper.PartnerUpdateMapper;
+import com.wallet.mapper.ProgramMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
+import com.wallet.repository.ProgramRepository;
 import com.wallet.service.interfaces.IPagingService;
 import com.wallet.service.interfaces.IPartnerService;
 import jakarta.transaction.Transactional;
@@ -52,12 +51,12 @@ public class PartnerService implements IPartnerService {
 
     @Override
     public Page<PartnerDTO> getPartnerList(boolean status, String search, String sort, int page, int limit) {
-        if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
-        if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
+        if (limit < 1) throw new InvalidParameterException("Page size must not be less than one!");
+        if (page < 0) throw new InvalidParameterException("Page number must not be less than zero!");
         List<Sort.Order> order = new ArrayList<>();
         Set<String> sourceFieldList = pagingService.getAllFields(Partner.class);
         String[] subSort = sort.split(",");
-        if(pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
+        if (pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
             order.add(new Sort.Order(pagingService.getSortDirection(subSort[1]), subSort[0]));
         } else {
             throw new InvalidParameterException(subSort[0] + " is not a propertied of Partner!");
@@ -66,6 +65,7 @@ public class PartnerService implements IPartnerService {
         Page<Partner> pageResult = partnerRepository.getPartnerList(true, search, pageable);
         return new PageImpl<>(pageResult.getContent().stream().map(PartnerMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
     }
+
 
     @Override
     public JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration) {
@@ -144,6 +144,19 @@ public class PartnerService implements IPartnerService {
     public PartnerDTO getByIdAndStatus(Long id, boolean status) {
         Optional<Partner> partner = partnerRepository.findPartnerByIdAndStatus(id, status);
         return partner.map(PartnerMapper.INSTANCE::toDTO).orElse(null);
+    }
+
+    @Override
+    public PartnerExtraDTO getPartnerExtra(Long id, boolean status) {
+        Optional<Partner> partner = partnerRepository.findPartnerByIdAndStatus(id, status);
+        PartnerExtraDTO partnerExtra = new PartnerExtraDTO();
+        if (partner != null) {
+            partnerExtra.setPartner(PartnerMapper.INSTANCE.toDTO(partner.get()));
+            partnerExtra.setProgramList(partner.get().getProgramList()
+                    .stream().filter(p -> p.getStatus().equals(true)).map(ProgramMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            return partnerExtra;
+        }
+        return null;
     }
 
     @Override

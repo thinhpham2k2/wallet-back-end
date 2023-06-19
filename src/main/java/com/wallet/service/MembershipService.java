@@ -6,6 +6,7 @@ import com.wallet.entity.Level;
 import com.wallet.entity.Membership;
 import com.wallet.entity.ProgramLevel;
 import com.wallet.entity.Wallet;
+import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.CustomerMapper;
 import com.wallet.mapper.LevelMapper;
 import com.wallet.mapper.MembershipMapper;
@@ -15,6 +16,7 @@ import com.wallet.repository.ProgramLevelRepository;
 import com.wallet.repository.WalletRepository;
 import com.wallet.service.interfaces.IMembershipService;
 import com.wallet.service.interfaces.IPagingService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -56,6 +58,30 @@ public class MembershipService implements IMembershipService {
         return new PageImpl<>(pageResult.getContent().stream().map(MembershipMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
     }
 
+    @Override
+    public Page<MembershipDTO> getMemberListForPartner(boolean status, String token, List<Long> programId, String search, String sort, int page, int limit) {
+        if (limit < 1) throw new InvalidParameterException("Page size must not be less than one!");
+        if (page < 0) throw new InvalidParameterException("Page number must not be less than zero!");
+        String userName;
+        List<Sort.Order> order = new ArrayList<>();
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Expired JWT token");
+        }
+        Set<String> sourceFieldList = pagingService.getAllFields(Membership.class);
+        String[] subSort = sort.split(",");
+        if (pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
+            order.add(new Sort.Order(pagingService.getSortDirection(subSort[1]), transferProperty(subSort[0])));
+        } else {
+            throw new InvalidParameterException(subSort[0] + " is not a propertied of Membership!");
+        }
+        Pageable pageable = PageRequest.of(page, limit).withSort(Sort.by(order));
+        Page<Membership> pageResult = membershipRepository.getMemberListForPartner(true, userName, programId, search, pageable);
+        return new PageImpl<>(pageResult.getContent().stream().map(MembershipMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
+    }
+
     private static String transferProperty(String property) {
         return switch (property) {
             case "level" -> "level.condition";
@@ -86,7 +112,7 @@ public class MembershipService implements IMembershipService {
                 customerMember.setLevelList(levelList.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             }
 
-            List<Wallet> wallets = walletRepository.getWalletsByStatusAndMembershipId(true, membership.getId());
+            List<Wallet> wallets = membership.getWalletList().stream().filter(w -> w.getStatus().equals(true)).collect(Collectors.toList());
             if (!wallets.isEmpty()) {
                customerMember.setWalletList(wallets.stream().map(WalletMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             }

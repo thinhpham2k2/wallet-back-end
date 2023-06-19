@@ -31,4 +31,5 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
             "OR p.email LIKE %?2% " +
             "OR p.address LIKE %?2%)")
     Page<Partner> getPartnerList(boolean status, String search, Pageable pageable);
+
 }

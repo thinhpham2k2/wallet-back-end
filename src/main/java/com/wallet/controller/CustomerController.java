@@ -2,10 +2,12 @@ package com.wallet.controller;
 
 import com.wallet.dto.CustomerDTO;
 import com.wallet.service.interfaces.ICustomerService;
+import com.wallet.service.interfaces.IJwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -33,19 +35,21 @@ public class CustomerController {
 
     private final ICustomerService customerService;
 
-    @GetMapping("")
-    @Secured({ADMIN})
-    @Operation(summary = "Get customer list (Admin API)")
-    public ResponseEntity<?> getAllCustomer(@RequestParam(defaultValue = "") String search,
+    private final IJwtService jwtService;
 
-                                            @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
+    @GetMapping("")
+    @Secured({PARTNER})
+    @Operation(summary = "Get customer list")
+    public ResponseEntity<?> getAllCustomer(@RequestParam(defaultValue = "") String search,
 
                                             @RequestParam(defaultValue = "0") Optional<Integer> page,
 
                                             @RequestParam(defaultValue = "fullName,desc") String sort,
 
-                                            @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
-        Page<CustomerDTO> customer = customerService.getCustomerList(true, partner, search, sort, page.orElse(0), limit.orElse(10));
+                                            @RequestParam(defaultValue = "10") Optional<Integer> limit,
+                                            HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        Page<CustomerDTO> customer = customerService.getCustomerListForPartner(true, jwt, search, sort, page.orElse(0), limit.orElse(10));
         if (!customer.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(customer);
         } else {
