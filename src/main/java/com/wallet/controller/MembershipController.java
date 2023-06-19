@@ -26,7 +26,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Membership API")
-@RequestMapping("/api/members")
+@RequestMapping("/partner/api/members")
 @SecurityRequirement(name = "Authorization")
 public class MembershipController {
 
@@ -39,8 +39,8 @@ public class MembershipController {
     private final IJwtService jwtService;
 
     @GetMapping("")
-    @Secured({ADMIN, PARTNER})
-    @Operation(summary = "Get membership list")
+    @Secured({ADMIN})
+    @Operation(summary = "Get membership list (Admin API)")
     public ResponseEntity<?> getAllMembership(@RequestParam(defaultValue = "") String search,
 
                                               @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,

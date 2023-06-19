@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Type API")
-@RequestMapping("/api/types")
+@RequestMapping("/partner/api/types")
 @SecurityRequirement(name = "Authorization")
 public class TypeController {
 

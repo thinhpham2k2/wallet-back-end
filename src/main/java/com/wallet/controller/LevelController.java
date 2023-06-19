@@ -21,7 +21,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Level API")
-@RequestMapping("/api/levels")
+@RequestMapping("/partner/api/levels")
 @SecurityRequirement(name = "Authorization")
 public class LevelController {
 
@@ -32,8 +32,8 @@ public class LevelController {
     private final ILevelService levelService;
 
     @GetMapping("")
-    @Secured({ADMIN, PARTNER})
-    @Operation(summary = "Get level list")
+    @Secured({ADMIN})
+    @Operation(summary = "Get level list (Admin API)")
     public ResponseEntity<?> getAllLevel(@RequestParam(defaultValue = "0") Optional<Integer> page,
 
                                          @RequestParam(defaultValue = "condition,asc") String sort,

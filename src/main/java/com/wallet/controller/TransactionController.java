@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Transaction API")
-@RequestMapping("/api/transactions")
+@RequestMapping("/partner/api/transactions")
 @SecurityRequirement(name = "Authorization")
 public class TransactionController {
 
