@@ -2,8 +2,11 @@ package com.wallet.controller;
 
 import com.wallet.dto.CustomerDTO;
 import com.wallet.dto.CustomerExtraDTO;
+import com.wallet.dto.CustomerMembershipDTO;
+import com.wallet.dto.CustomerProgramDTO;
 import com.wallet.service.interfaces.ICustomerService;
 import com.wallet.service.interfaces.IJwtService;
+import com.wallet.service.interfaces.IMembershipService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -33,6 +36,8 @@ public class CustomerController {
     public static final String PARTNER = "ROLE_Partner";
 
     private final ICustomerService customerService;
+
+    private final IMembershipService membershipService;
 
     private final IJwtService jwtService;
 
@@ -65,5 +70,20 @@ public class CustomerController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found customer !");
         }
+    }
+
+    @PostMapping("")
+    @Secured({ADMIN, PARTNER})
+    @Operation(summary = "Create customer by using program token")
+    public ResponseEntity<?> createCustomer(@RequestBody CustomerProgramDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if(jwt != null) {
+            CustomerMembershipDTO result = membershipService.createCustomer(jwt, customer);
+            if(result != null){
+                return ResponseEntity.status(HttpStatus.OK).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create customer fail !");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 }

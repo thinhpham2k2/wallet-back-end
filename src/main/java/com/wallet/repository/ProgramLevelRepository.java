@@ -26,4 +26,6 @@ public interface ProgramLevelRepository extends JpaRepository<ProgramLevel, Long
             "AND p.level.status = ?1 " +
             "ORDER BY p.level.condition ASC")
     List<ProgramLevel> getLeveListByProgramToken(boolean status, String token);
+
+    List<ProgramLevel> getProgramLevelByStatusAndProgramId(boolean status, long programId);
 }

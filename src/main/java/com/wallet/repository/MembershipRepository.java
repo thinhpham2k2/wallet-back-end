@@ -35,4 +35,6 @@ public interface MembershipRepository extends JpaRepository<Membership, Long> {
             "AND m.customer.status = ?1 " +
             "AND m.customer.customerId = ?3")
     Membership getCustomerMembershipInform(boolean status, String token, String customerId);
+
+    Integer countAllByStatusAndProgramId(boolean status, long programId);
 }
