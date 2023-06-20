@@ -1,10 +1,16 @@
 package com.wallet.service;
 
 import com.wallet.dto.ProgramDTO;
+import com.wallet.dto.ProgramExtraDTO;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.entity.Program;
+import com.wallet.entity.ProgramLevel;
 import com.wallet.jwt.JwtTokenProvider;
+import com.wallet.mapper.LevelMapper;
+import com.wallet.mapper.PartnerMapper;
 import com.wallet.mapper.ProgramMapper;
+import com.wallet.repository.MembershipRepository;
+import com.wallet.repository.ProgramLevelRepository;
 import com.wallet.repository.ProgramRepository;
 import com.wallet.service.interfaces.IPagingService;
 import com.wallet.service.interfaces.IProgramService;
@@ -27,16 +33,20 @@ public class ProgramService implements IProgramService {
 
     private final ProgramRepository programRepository;
 
+    private final ProgramLevelRepository programLevelRepository;
+
+    private final MembershipRepository membershipRepository;
+
     private final IPagingService pagingService;
 
     @Override
     public Page<ProgramDTO> getProgramList(boolean status, List<Long> partnerId, String search, String sort, int page, int limit) {
-        if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
-        if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
+        if (limit < 1) throw new InvalidParameterException("Page size must not be less than one!");
+        if (page < 0) throw new InvalidParameterException("Page number must not be less than zero!");
         List<Sort.Order> order = new ArrayList<>();
         Set<String> sourceFieldList = pagingService.getAllFields(Program.class);
         String[] subSort = sort.split(",");
-        if(pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
+        if (pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
             order.add(new Sort.Order(pagingService.getSortDirection(subSort[1]), transferProperty(subSort[0])));
         } else {
             throw new InvalidParameterException(subSort[0] + " is not a propertied of Program!");
@@ -46,7 +56,7 @@ public class ProgramService implements IProgramService {
         return new PageImpl<>(pageResult.getContent().stream().map(ProgramMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
     }
 
-    private static String transferProperty(String property){
+    private static String transferProperty(String property) {
         if (property.equals("partner")) {
             return "partner.fullName";
         }
@@ -54,9 +64,24 @@ public class ProgramService implements IProgramService {
     }
 
     @Override
+    public ProgramExtraDTO getProgramById(boolean status, long id) {
+        Program program = programRepository.getProgramByStatusAndId(status, id);
+        if (program != null) {
+            ProgramExtraDTO programExtra = new ProgramExtraDTO();
+            programExtra.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, id));
+            programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(program));
+            programExtra.setPartner(PartnerMapper.INSTANCE.toDTO(program.getPartner()));
+            programExtra.setLevelList(programLevelRepository.getProgramLevelByStatusAndProgramId(true, id).stream()
+                    .map(ProgramLevel::getLevel).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            return programExtra;
+        }
+        return null;
+    }
+
+    @Override
     public Page<ProgramDTO> getProgramListForPartner(boolean status, String token, String search, String sort, int page, int limit) {
-        if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
-        if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
+        if (limit < 1) throw new InvalidParameterException("Page size must not be less than one!");
+        if (page < 0) throw new InvalidParameterException("Page number must not be less than zero!");
         String userName;
         List<Sort.Order> order = new ArrayList<>();
         try {
@@ -67,7 +92,7 @@ public class ProgramService implements IProgramService {
         }
         Set<String> sourceFieldList = pagingService.getAllFields(Program.class);
         String[] subSort = sort.split(",");
-        if(pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
+        if (pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
             order.add(new Sort.Order(pagingService.getSortDirection(subSort[1]), transferProperty(subSort[0])));
         } else {
             throw new InvalidParameterException(subSort[0] + " is not a propertied of Program!");

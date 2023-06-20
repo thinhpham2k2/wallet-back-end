@@ -12,6 +12,7 @@ import com.wallet.mapper.PartnerRegisterMapper;
 import com.wallet.mapper.PartnerUpdateMapper;
 import com.wallet.mapper.ProgramMapper;
 import com.wallet.repository.AdminRepository;
+import com.wallet.repository.CustomerRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.repository.ProgramRepository;
 import com.wallet.service.interfaces.IPagingService;
@@ -37,6 +38,8 @@ public class PartnerService implements IPartnerService {
     private final PartnerRepository partnerRepository;
 
     private final AdminRepository adminRepository;
+
+    private final CustomerRepository customerRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -150,7 +153,8 @@ public class PartnerService implements IPartnerService {
     public PartnerExtraDTO getPartnerExtra(Long id, boolean status) {
         Optional<Partner> partner = partnerRepository.findPartnerByIdAndStatus(id, status);
         PartnerExtraDTO partnerExtra = new PartnerExtraDTO();
-        if (partner != null) {
+        if (partner.isPresent()) {
+            partnerExtra.setNumOfCustomers(customerRepository.countAllByStatusAndPartnerId(true, id));
             partnerExtra.setPartner(PartnerMapper.INSTANCE.toDTO(partner.get()));
             partnerExtra.setProgramList(partner.get().getProgramList()
                     .stream().filter(p -> p.getStatus().equals(true)).map(ProgramMapper.INSTANCE::toDTO).collect(Collectors.toList()));

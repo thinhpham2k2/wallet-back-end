@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PartnerExtraDTO {
 
-    PartnerDTO partner;
-
-    List<ProgramDTO> programList;
+    private int numOfCustomers;
+    private PartnerDTO partner;
+    private List<ProgramDTO> programList;
 }

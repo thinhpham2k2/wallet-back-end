@@ -29,4 +29,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             "OR c.email LIKE %?3% " +
             "OR c.phone LIKE %?3%)")
     Page<Customer> getCustomerListForPartner(boolean status, String userName, String search, Pageable pageable);
+
+    Customer findCustomerByStatusAndId(boolean status, long id);
+
+    Integer countAllByStatusAndPartnerId(boolean status, long partnerId);
 }

@@ -24,6 +24,6 @@ public interface CustomerMapper {
     default Partner mapPartner(Long id){
         Partner partner = new Partner();
         partner.setId(id);
-        return  partner;
+        return partner;
     }
 }

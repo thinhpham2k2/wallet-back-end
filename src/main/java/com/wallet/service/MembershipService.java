@@ -1,19 +1,13 @@
 package com.wallet.service;
 
-import com.wallet.dto.CustomerMembershipDTO;
-import com.wallet.dto.MembershipDTO;
-import com.wallet.entity.Level;
-import com.wallet.entity.Membership;
-import com.wallet.entity.ProgramLevel;
-import com.wallet.entity.Wallet;
+import com.wallet.dto.*;
+import com.wallet.entity.*;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.CustomerMapper;
 import com.wallet.mapper.LevelMapper;
 import com.wallet.mapper.MembershipMapper;
 import com.wallet.mapper.WalletMapper;
-import com.wallet.repository.MembershipRepository;
-import com.wallet.repository.ProgramLevelRepository;
-import com.wallet.repository.WalletRepository;
+import com.wallet.repository.*;
 import com.wallet.service.interfaces.IMembershipService;
 import com.wallet.service.interfaces.IPagingService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -22,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.security.InvalidParameterException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +33,13 @@ public class MembershipService implements IMembershipService {
 
     private final ProgramLevelRepository programLevelRepository;
 
+    private final ProgramRepository programRepository;
+
+    private final CustomerRepository customerRepository;
+
     private final WalletRepository walletRepository;
+
+    private final WalletTypeRepository walletTypeRepository;
 
     private final IPagingService pagingService;
 
@@ -107,18 +109,64 @@ public class MembershipService implements IMembershipService {
             }
 
             List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
-            if(!programLevelList.isEmpty()) {
+            if (!programLevelList.isEmpty()) {
                 List<Level> levelList = programLevelList.stream().map(ProgramLevel::getLevel).toList();
                 customerMember.setLevelList(levelList.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             }
 
-            List<Wallet> wallets = membership.getWalletList().stream().filter(w -> w.getStatus().equals(true)).collect(Collectors.toList());
+            List<Wallet> wallets = membership.getWalletList().stream().filter(w -> w.getStatus().equals(true)).toList();
             if (!wallets.isEmpty()) {
-               customerMember.setWalletList(wallets.stream().map(WalletMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                customerMember.setWalletList(wallets.stream().map(WalletMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             }
         } else {
             throw new InvalidParameterException("Not found membership information !");
         }
         return customerMember;
+    }
+
+    @Override
+    public CustomerMembershipDTO createCustomer(String token, CustomerProgramDTO customer) {
+        Program program = programRepository.getProgramByStatusAndToken(true, token);
+        if (program != null) {
+            CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, program.getPartner().getId(), null);
+            long count = program.getPartner().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId())).count();
+            if(count == 0) {
+                CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
+
+                //Create Customer
+                Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
+
+                //Get Level
+                List<Level> levelList = program.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().equals(BigDecimal.valueOf(0L))).toList();
+                //Create Membership
+                Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, levelList.isEmpty() ? null : levelList.get(0).getId(), null, customerEntity.getId(), null, program.getId(), null)));
+
+                //Create Wallet
+                Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), null)));
+
+                //Create Customer Membership DTO
+                customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
+
+                customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
+
+                List<WalletDTO> walletList = new ArrayList<>();
+                walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
+                customerMember.setWalletList(walletList);
+
+                ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token,  BigDecimal.valueOf(0L));
+                if (programLevel != null) {
+                    customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                }
+
+                List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
+                if (!programLevelList.isEmpty()) {
+                    List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
+                    customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                }
+
+                return customerMember;
+            }
+        }
+        return null;
     }
 }
