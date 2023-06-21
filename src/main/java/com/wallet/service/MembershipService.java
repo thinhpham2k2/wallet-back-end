@@ -134,7 +134,6 @@ public class MembershipService implements IMembershipService {
             Optional<Level> level = program.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
             if (count == 0 && level.isPresent()) {
                 CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
-
                 //Create Customer
                 Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
 
