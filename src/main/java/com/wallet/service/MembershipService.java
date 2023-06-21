@@ -21,6 +21,7 @@ import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -130,19 +131,21 @@ public class MembershipService implements IMembershipService {
         if (program != null) {
             CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, program.getPartner().getId(), null);
             long count = program.getPartner().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId())).count();
-            if(count == 0) {
+            Optional<Level> level = program.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
+            if (count == 0 && level.isPresent()) {
                 CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
 
                 //Create Customer
                 Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
 
                 //Get Level
-                List<Level> levelList = program.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().equals(BigDecimal.valueOf(0L))).toList();
+
+                Membership membershipEntity = new Membership();
                 //Create Membership
-                Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, levelList.isEmpty() ? null : levelList.get(0).getId(), null, customerEntity.getId(), null, program.getId(), null)));
+                membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.getId(), program.getProgramName())));
 
                 //Create Wallet
-                Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), null)));
+                Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
 
                 //Create Customer Membership DTO
                 customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
@@ -153,7 +156,7 @@ public class MembershipService implements IMembershipService {
                 walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
                 customerMember.setWalletList(walletList);
 
-                ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token,  BigDecimal.valueOf(0L));
+                ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
                 if (programLevel != null) {
                     customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
                 }
