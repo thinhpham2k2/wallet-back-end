@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
@@ -30,7 +31,16 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             "OR c.phone LIKE %?3%)")
     Page<Customer> getCustomerListForPartner(boolean status, String userName, String search, Pageable pageable);
 
-    Customer findCustomerByStatusAndId(boolean status, long id);
-
     Integer countAllByStatusAndPartnerId(boolean status, long partnerId);
+
+    @Query("SELECT c FROM Customer c " +
+            "WHERE c.status = ?1 " +
+            "AND c.id = ?2 ")
+    Optional<Customer> findByStatusAndId(boolean status, long id);
+
+    @Query("SELECT c FROM Customer c " +
+            "WHERE c.status = ?1 " +
+            "AND c.id = ?2 " +
+            "AND c.partner.userName = ?3")
+    Optional<Customer> findByStatusAndId(boolean status, long id, String userName);
 }

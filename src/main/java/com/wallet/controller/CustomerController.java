@@ -1,9 +1,6 @@
 package com.wallet.controller;
 
-import com.wallet.dto.CustomerDTO;
-import com.wallet.dto.CustomerExtraDTO;
-import com.wallet.dto.CustomerMembershipDTO;
-import com.wallet.dto.CustomerProgramDTO;
+import com.wallet.dto.*;
 import com.wallet.service.interfaces.ICustomerService;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IMembershipService;
@@ -17,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -63,17 +62,29 @@ public class CustomerController {
     @GetMapping("/{id}")
     @Secured({ADMIN, PARTNER})
     @Operation(summary = "Get customer by customer Id")
-    public ResponseEntity<?> getCustomerById(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
-        CustomerExtraDTO customerExtra = customerService.getCustomerById(true, id);
-        if (customerExtra != null) {
-            return ResponseEntity.status(HttpStatus.OK).body(customerExtra);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found customer !");
+    public ResponseEntity<?> getCustomerById(@PathVariable(value = "id", required = false) Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            CustomerExtraDTO result = new CustomerExtraDTO();
+            Optional<? extends GrantedAuthority> role = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().findFirst();
+            if (role.isPresent()) {
+                if (role.get().toString().equals(PARTNER)) {
+                    result = customerService.getCustomerById(jwt, id, false);
+                } else if (role.get().toString().equals(ADMIN)) {
+                    result = customerService.getCustomerById(jwt, id, true);
+                }
+                if (result != null) {
+                    return ResponseEntity.status(HttpStatus.OK).body(result);
+                }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found customer detail !");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid jwt token !");
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 
     @PostMapping("")
-    @Secured({ADMIN, PARTNER})
+    @Secured({PARTNER})
     @Operation(summary = "Create customer by using program token")
     public ResponseEntity<?> createCustomer(@RequestBody CustomerProgramDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);

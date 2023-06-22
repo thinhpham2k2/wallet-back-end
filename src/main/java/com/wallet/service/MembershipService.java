@@ -3,10 +3,7 @@ package com.wallet.service;
 import com.wallet.dto.*;
 import com.wallet.entity.*;
 import com.wallet.jwt.JwtTokenProvider;
-import com.wallet.mapper.CustomerMapper;
-import com.wallet.mapper.LevelMapper;
-import com.wallet.mapper.MembershipMapper;
-import com.wallet.mapper.WalletMapper;
+import com.wallet.mapper.*;
 import com.wallet.repository.*;
 import com.wallet.service.interfaces.IMembershipService;
 import com.wallet.service.interfaces.IPagingService;
@@ -71,7 +68,7 @@ public class MembershipService implements IMembershipService {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
             userName = jwtTokenProvider.getUserNameFromJWT(token);
         } catch (ExpiredJwtException e) {
-            throw new InvalidParameterException("Expired JWT token");
+            throw new InvalidParameterException("Invalid JWT token");
         }
         Set<String> sourceFieldList = pagingService.getAllFields(Membership.class);
         String[] subSort = sort.split(",");
@@ -131,20 +128,24 @@ public class MembershipService implements IMembershipService {
         if (program != null) {
             CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, program.getPartner().getId(), null);
             long count = program.getPartner().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId())).count();
+
+            //Get Level
             Optional<Level> level = program.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
             if (count == 0 && level.isPresent()) {
                 CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
                 //Create Customer
                 Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
+                customerEntity.getPartner().setFullName(program.getPartner().getFullName());
 
-                //Get Level
-
-                Membership membershipEntity = new Membership();
                 //Create Membership
-                membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.getId(), program.getProgramName())));
+                Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.getId(), program.getProgramName())));
+                membershipEntity.getLevel().setLevel(level.get().getLevel());
+                membershipEntity.getCustomer().setFullName(customer.getFullName());
+                membershipEntity.getProgram().setProgramName(program.getProgramName());
 
                 //Create Wallet
                 Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
+                walletEntity.getType().setType("Main wallet");
 
                 //Create Customer Membership DTO
                 customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
@@ -170,5 +171,40 @@ public class MembershipService implements IMembershipService {
             }
         }
         return null;
+    }
+
+    @Override
+    public MembershipExtraDTO getMemberById(String token, long memberId, boolean isAdmin) {
+        String userName;
+        Optional<Membership> membership;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        if (isAdmin) {
+            membership = membershipRepository.findByStatusAndId(true, memberId);
+        } else {
+            membership = membershipRepository.findByStatusAndId(true, memberId, userName);
+        }
+        if (membership.isPresent()) {
+            MembershipExtraDTO membershipExtra = new MembershipExtraDTO();
+
+            //Set Customer
+            membershipExtra.setCustomer(CustomerMapper.INSTANCE.toDTO(membership.get().getCustomer()));
+            //Set Membership
+            membershipExtra.setMembership(MembershipMapper.INSTANCE.toDTO(membership.get()));
+            //Set Partner
+            membershipExtra.setPartner(PartnerMapper.INSTANCE.toDTO(membership.get().getCustomer().getPartner()));
+            //Set Wallet List
+            membershipExtra.setWalletList(membership.get().getWalletList().stream().map(WalletMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            //Set Level List
+            membershipExtra.setLevelList(membership.get().getProgram().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getStatus().equals(true)).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+
+            return membershipExtra;
+        } else {
+            throw new InvalidParameterException("Not found membership!");
+        }
     }
 }
