@@ -33,7 +33,7 @@ public class LevelController {
 
     @GetMapping("")
     @Secured({ADMIN})
-    @Operation(summary = "Get level list (Admin API)")
+    @Operation(summary = "Get level list")
     public ResponseEntity<?> getAllLevel(@RequestParam(defaultValue = "0") Optional<Integer> page,
 
                                          @RequestParam(defaultValue = "condition,asc") String sort,

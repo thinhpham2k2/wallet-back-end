@@ -12,5 +12,5 @@ public interface ICustomerService {
 
     Page<CustomerDTO> getCustomerListForPartner(boolean status, String token, String search, String sort, int page, int limit);
 
-    CustomerExtraDTO getCustomerById(boolean status, long id);
+    CustomerExtraDTO getCustomerById(String token, long id, boolean isAdmin);
 }

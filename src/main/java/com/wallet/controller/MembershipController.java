@@ -2,6 +2,7 @@ package com.wallet.controller;
 
 import com.wallet.dto.CustomerMembershipDTO;
 import com.wallet.dto.MembershipDTO;
+import com.wallet.dto.MembershipExtraDTO;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IMembershipService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,12 +15,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,16 +62,40 @@ public class MembershipController {
     }
 
     @GetMapping("/information")
-    @Secured({ADMIN, PARTNER})
+    @Secured({PARTNER})
     @Operation(summary = "Get membership information")
     public ResponseEntity<?> getCustomerMembershipInform(@RequestParam(defaultValue = "") String customerId, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
-        if(jwt != null) {
+        if (jwt != null) {
             CustomerMembershipDTO result = membershipService.getCustomerMembershipInform(jwt, customerId);
-            if(result != null){
+            if (result != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership inform !");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @GetMapping("/{id}")
+    @Secured({ADMIN, PARTNER})
+    @Operation(summary = "Get membership detail")
+    public ResponseEntity<?> getCustomerMembershipInform(@PathVariable(value = "id", required = false) Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            MembershipExtraDTO result = new MembershipExtraDTO();
+            Optional<? extends GrantedAuthority> role = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().findFirst();
+            if (role.isPresent()) {
+                if (role.get().toString().equals(PARTNER)) {
+                    result = membershipService.getMemberById(jwt, id, false);
+                } else if (role.get().toString().equals(ADMIN)) {
+                    result = membershipService.getMemberById(jwt, id, true);
+                }
+                if (result != null) {
+                    return ResponseEntity.status(HttpStatus.OK).body(result);
+                }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership detail !");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid jwt token !");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }

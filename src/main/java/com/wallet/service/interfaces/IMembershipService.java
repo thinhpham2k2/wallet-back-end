@@ -3,6 +3,7 @@ package com.wallet.service.interfaces;
 import com.wallet.dto.CustomerMembershipDTO;
 import com.wallet.dto.CustomerProgramDTO;
 import com.wallet.dto.MembershipDTO;
+import com.wallet.dto.MembershipExtraDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -16,4 +17,6 @@ public interface IMembershipService {
     CustomerMembershipDTO getCustomerMembershipInform(String token, String customerId);
 
     CustomerMembershipDTO createCustomer(String token, CustomerProgramDTO customer);
+
+    MembershipExtraDTO getMemberById(String token, long memberId, boolean isAdmin);
 }

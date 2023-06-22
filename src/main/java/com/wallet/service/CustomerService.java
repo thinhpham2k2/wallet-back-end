@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -80,12 +81,24 @@ public class CustomerService implements ICustomerService {
     }
 
     @Override
-    public CustomerExtraDTO getCustomerById(boolean status, long id) {
-        CustomerExtraDTO customerExtra = new CustomerExtraDTO();
-        Customer customer = customerRepository.findCustomerByStatusAndId(status, id);
-        if (customer != null) {
-            customerExtra.setCustomer(CustomerMapper.INSTANCE.toDTO(customer));
-            List<Membership> memberships = customer.getMembershipList();
+    public CustomerExtraDTO getCustomerById(String token, long id, boolean isAdmin) {
+        String userName;
+        Optional<Customer> customer;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        if (isAdmin) {
+            customer = customerRepository.findByStatusAndId(true, id);
+        } else {
+            customer = customerRepository.findByStatusAndId(true, id, userName);
+        }
+        if (customer.isPresent()) {
+            CustomerExtraDTO customerExtra = new CustomerExtraDTO();
+            customerExtra.setCustomer(CustomerMapper.INSTANCE.toDTO(customer.get()));
+            List<Membership> memberships = customer.get().getMembershipList();
             if (!memberships.isEmpty()) {
                 customerExtra.setMembershipList(memberships.stream().filter(m -> m.getStatus().equals(true)).map(MembershipMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             }

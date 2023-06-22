@@ -12,13 +12,14 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerMembershipDTO implements Serializable {
+public class MembershipExtraDTO implements Serializable {
+
 
     private CustomerDTO customer;
 
     private MembershipDTO membership;
 
-    private LevelDTO nextLevel;
+    private PartnerDTO partner;
 
     private List<LevelDTO> levelList;
 

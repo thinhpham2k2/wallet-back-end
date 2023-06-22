@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MembershipRepository extends JpaRepository<Membership, Long> {
 
@@ -37,4 +38,15 @@ public interface MembershipRepository extends JpaRepository<Membership, Long> {
     Membership getCustomerMembershipInform(boolean status, String token, String customerId);
 
     Integer countAllByStatusAndProgramId(boolean status, long programId);
+
+    @Query("SELECT m FROM Membership m " +
+            "WHERE m.status = ?1 " +
+            "AND m.id = ?2 ")
+    Optional<Membership> findByStatusAndId(boolean status, long memberId);
+
+    @Query("SELECT m FROM Membership m " +
+            "WHERE m.status = ?1 " +
+            "AND m.id = ?2 " +
+            "AND m.customer.partner.userName = ?3")
+    Optional<Membership> findByStatusAndId(boolean status, long memberId, String userName);
 }
