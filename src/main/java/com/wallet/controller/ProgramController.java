@@ -62,17 +62,20 @@ public class ProgramController {
     }
 
     @GetMapping("/{id}")
-    @Secured({ADMIN, PARTNER})
+    @Secured({PARTNER})
     @Operation(summary = "Get program by id")
-    public ResponseEntity<?> getProgramById(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
-        ProgramExtraDTO program = programService.getProgramById(true, id);
-        if (program != null) {
-            return ResponseEntity.status(HttpStatus.OK).body(program);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found program !");
+    public ResponseEntity<?> getProgramById(@PathVariable(value = "id", required = false) Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        ProgramExtraDTO program = programService.getProgramById(jwt, id, false);
+        if (jwt != null) {
+            if (program != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(program);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found program detail !");
+            }
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
-
 
 
     @PostMapping("/token")
@@ -91,12 +94,11 @@ public class ProgramController {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginFormDTO.getUserName(), loginFormDTO.getPassword()));
             CustomUserDetails partner = (CustomUserDetails) authentication.getPrincipal();
-            if(partner.getPartner() != null) {
+            if (partner.getPartner() != null) {
                 String token = programService.getProgramTokenByPartnerCode(partner.getPartner().getCode());
-                if(token != null) {
+                if (token != null) {
                     return ResponseEntity.status(HttpStatus.OK).body(token);
-                }
-                else {
+                } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not found valid program active!");
                 }
             }

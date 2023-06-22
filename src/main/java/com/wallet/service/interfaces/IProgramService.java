@@ -12,7 +12,7 @@ public interface IProgramService {
 
     Page<ProgramDTO> getProgramListForPartner(boolean status, String token, String search, String sort, int page, int limit);
 
-    ProgramExtraDTO getProgramById(boolean status, long id);
+    ProgramExtraDTO getProgramById(String token, long id, boolean isAdmin);
 
     String getProgramTokenByPartnerCode(String code);
 }
