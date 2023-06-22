@@ -65,13 +65,25 @@ public class ProgramService implements IProgramService {
     }
 
     @Override
-    public ProgramExtraDTO getProgramById(boolean status, long id) {
-        Program program = programRepository.getProgramByStatusAndId(status, id);
-        if (program != null) {
+    public ProgramExtraDTO getProgramById(String token, long id, boolean isAdmin) {
+        Optional<Program> program;
+        if (isAdmin) {
+            program = programRepository.getProgramByStatusAndId(true, id);
+        } else {
+            String userName;
+            try {
+                JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+                userName = jwtTokenProvider.getUserNameFromJWT(token);
+            } catch (ExpiredJwtException e) {
+                throw new InvalidParameterException("Invalid JWT token");
+            }
+            program = programRepository.getProgramByStatusAndId(true, id, userName);
+        }
+        if (program.isPresent()) {
             ProgramExtraDTO programExtra = new ProgramExtraDTO();
             programExtra.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, id));
-            programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(program));
-            programExtra.setPartner(PartnerMapper.INSTANCE.toDTO(program.getPartner()));
+            programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(program.get()));
+            programExtra.setPartner(PartnerMapper.INSTANCE.toDTO(program.get().getPartner()));
             programExtra.setLevelList(programLevelRepository.getProgramLevelByStatusAndProgramId(true, id).stream()
                     .map(ProgramLevel::getLevel).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             return programExtra;

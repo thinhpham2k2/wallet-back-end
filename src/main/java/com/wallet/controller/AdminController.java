@@ -122,6 +122,18 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/programs/{id}")
+    @Secured({ADMIN})
+    @Operation(summary = "Get program by id")
+    public ResponseEntity<?> getProgramById(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
+        ProgramExtraDTO program = programService.getProgramById("Admin token", id, true);
+        if (program != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(program);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found program !");
+        }
+    }
+
     @DeleteMapping("/partners/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Delete a partner account")
