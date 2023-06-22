@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -100,5 +101,16 @@ public class ProgramService implements IProgramService {
         Pageable pageable = PageRequest.of(page, limit).withSort(Sort.by(order));
         Page<Program> pageResult = programRepository.getProgramListForPartner(true, userName, search, pageable);
         return new PageImpl<>(pageResult.getContent().stream().map(ProgramMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
+    }
+
+    @Override
+    public String getProgramTokenByPartnerCode(String code) {
+        Optional<Program> program = programRepository.getProgramToken(true, code);
+        if(program.isPresent()) {
+            return program.get().getToken();
+        }
+        else {
+            return null;
+        }
     }
 }

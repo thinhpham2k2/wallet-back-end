@@ -43,7 +43,7 @@ public class AuthenticationController {
 
     @PostMapping("/sign-in")
     @Operation(summary = "Login to system")
-    public ResponseEntity<?> loginAccount(@RequestBody LoginFormDTO loginFormDTO) throws MethodArgumentTypeMismatchException{
+    public ResponseEntity<?> loginAccount(@RequestBody LoginFormDTO loginFormDTO) throws MethodArgumentTypeMismatchException {
         String userName = loginFormDTO.getUserName();
         String pass = loginFormDTO.getPassword();
 
@@ -93,7 +93,7 @@ public class AuthenticationController {
 
     @PostMapping("/google")
     @Operation(summary = "Login with Google")
-    public ResponseEntity<?> getJwtFromEmail(@RequestParam(value = "email", required = true) String email) throws MethodArgumentTypeMismatchException{
+    public ResponseEntity<?> getJwtFromEmail(@RequestParam(value = "email", required = true) String email) throws MethodArgumentTypeMismatchException {
         if (email != null) {
             JwtResponseDTO jwt = jwtService.getJwtFromEmail(email, 17280000000L);
             if (jwt != null) {
@@ -106,7 +106,7 @@ public class AuthenticationController {
 
     @PostMapping("/google/register")
     @Operation(summary = "Create account partner for the first time login with Google")
-    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) throws MethodArgumentTypeMismatchException{
+    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) throws MethodArgumentTypeMismatchException {
         if (partnerDTO != null) {
             JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 17280000000L);
             if (jwtResponseDTO.getPartnerDTO() != null) {

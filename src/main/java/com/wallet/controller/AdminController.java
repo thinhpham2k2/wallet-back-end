@@ -99,6 +99,18 @@ public class AdminController {
         }
     }
 
+    @DeleteMapping("/partners/{id}")
+    @Secured({ADMIN})
+    @Operation(summary = "Delete a partner account")
+    public ResponseEntity<?> deletePartner(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
+        if (id == null) {
+            throw new InvalidParameterException("Invalid partner id");
+        } else {
+            PartnerDTO partner = partnerService.deletePartner(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(partner);
+        }
+    }
+
     @GetMapping("/partners/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Get partner by id")
