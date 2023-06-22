@@ -60,25 +60,16 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    @Secured({ADMIN, PARTNER})
-    @Operation(summary = "Get customer by customer Id")
+    @Secured({PARTNER})
+    @Operation(summary = "Get customer by detail")
     public ResponseEntity<?> getCustomerById(@PathVariable(value = "id", required = false) Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
-            CustomerExtraDTO result = new CustomerExtraDTO();
-            Optional<? extends GrantedAuthority> role = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().findFirst();
-            if (role.isPresent()) {
-                if (role.get().toString().equals(PARTNER)) {
-                    result = customerService.getCustomerById(jwt, id, false);
-                } else if (role.get().toString().equals(ADMIN)) {
-                    result = customerService.getCustomerById(jwt, id, true);
-                }
-                if (result != null) {
-                    return ResponseEntity.status(HttpStatus.OK).body(result);
-                }
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found customer detail !");
+            CustomerExtraDTO result = customerService.getCustomerById(jwt, id, false);
+            if (result != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(result);
             }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid jwt token !");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found customer detail !");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
