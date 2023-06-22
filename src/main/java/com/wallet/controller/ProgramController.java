@@ -92,7 +92,13 @@ public class ProgramController {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginFormDTO.getUserName(), loginFormDTO.getPassword()));
             CustomUserDetails partner = (CustomUserDetails) authentication.getPrincipal();
             if(partner.getPartner() != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(programService.getProgramTokenByPartnerCode(partner.getPartner().getCode()));
+                String token = programService.getProgramTokenByPartnerCode(partner.getPartner().getCode());
+                if(token != null) {
+                    return ResponseEntity.status(HttpStatus.OK).body(token);
+                }
+                else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not found valid program active!");
+                }
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not found valid program active!");
         } catch (Exception e) {

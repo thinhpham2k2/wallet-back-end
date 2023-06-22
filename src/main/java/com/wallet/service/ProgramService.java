@@ -110,7 +110,7 @@ public class ProgramService implements IProgramService {
             return program.get().getToken();
         }
         else {
-            throw new InvalidParameterException("Not found valid program active!");
+            return null;
         }
     }
 }
