@@ -82,17 +82,17 @@ public class CustomerService implements ICustomerService {
 
     @Override
     public CustomerExtraDTO getCustomerById(String token, long id, boolean isAdmin) {
-        String userName;
         Optional<Customer> customer;
-        try {
-            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            userName = jwtTokenProvider.getUserNameFromJWT(token);
-        } catch (ExpiredJwtException e) {
-            throw new InvalidParameterException("Invalid JWT token");
-        }
         if (isAdmin) {
             customer = customerRepository.findByStatusAndId(true, id);
         } else {
+            String userName;
+            try {
+                JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+                userName = jwtTokenProvider.getUserNameFromJWT(token);
+            } catch (ExpiredJwtException e) {
+                throw new InvalidParameterException("Invalid JWT token");
+            }
             customer = customerRepository.findByStatusAndId(true, id, userName);
         }
         if (customer.isPresent()) {

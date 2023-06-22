@@ -176,17 +176,17 @@ public class MembershipService implements IMembershipService {
 
     @Override
     public MembershipExtraDTO getMemberById(String token, long memberId, boolean isAdmin) {
-        String userName;
         Optional<Membership> membership;
-        try {
-            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            userName = jwtTokenProvider.getUserNameFromJWT(token);
-        } catch (ExpiredJwtException e) {
-            throw new InvalidParameterException("Invalid JWT token");
-        }
         if (isAdmin) {
             membership = membershipRepository.findByStatusAndId(true, memberId);
         } else {
+            String userName;
+            try {
+                JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+                userName = jwtTokenProvider.getUserNameFromJWT(token);
+            } catch (ExpiredJwtException e) {
+                throw new InvalidParameterException("Invalid JWT token");
+            }
             membership = membershipRepository.findByStatusAndId(true, memberId, userName);
         }
         if (membership.isPresent()) {

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -57,6 +58,17 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/customers/{id}")
+    @Secured({ADMIN})
+    @Operation(summary = "Get customer by detail")
+    public ResponseEntity<?> getCustomerById(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
+            CustomerExtraDTO result = customerService.getCustomerById("Admin token", id, true);
+            if (result != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found customer detail !");
+    }
+
     @GetMapping("/members")
     @Secured({ADMIN})
     @Operation(summary = "Get membership list")
@@ -79,18 +91,29 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/members/{id}")
+    @Secured({ADMIN})
+    @Operation(summary = "Get membership detail")
+    public ResponseEntity<?> getCustomerMembershipInform(@PathVariable(value = "id", required = false) Long id) throws MethodArgumentTypeMismatchException {
+        MembershipExtraDTO result = membershipService.getMemberById("Admin token", id, true);
+        if (result != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership detail !");
+    }
+
     @GetMapping("/programs")
     @Secured({ADMIN})
     @Operation(summary = "Get program list")
     public ResponseEntity<?> getAllProgram(@RequestParam(defaultValue = "") String search,
 
-                                            @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
+                                           @RequestParam(defaultValue = "") @Parameter(description = "<b>Filter by partner ID<b>") List<Long> partner,
 
-                                            @RequestParam(defaultValue = "0") Optional<Integer> page,
+                                           @RequestParam(defaultValue = "0") Optional<Integer> page,
 
-                                            @RequestParam(defaultValue = "programName,desc") String sort,
+                                           @RequestParam(defaultValue = "programName,desc") String sort,
 
-                                            @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
+                                           @RequestParam(defaultValue = "10") Optional<Integer> limit) throws MethodArgumentTypeMismatchException {
         Page<ProgramDTO> program = programService.getProgramList(true, partner, search, sort, page.orElse(0), limit.orElse(10));
         if (!program.getContent().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(program);
