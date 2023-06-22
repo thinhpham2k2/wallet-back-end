@@ -13,4 +13,6 @@ public interface IProgramService {
     Page<ProgramDTO> getProgramListForPartner(boolean status, String token, String search, String sort, int page, int limit);
 
     ProgramExtraDTO getProgramById(boolean status, long id);
+
+    String getProgramTokenByPartnerCode(String code);
 }

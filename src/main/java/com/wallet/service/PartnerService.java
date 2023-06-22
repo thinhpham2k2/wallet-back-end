@@ -17,6 +17,7 @@ import com.wallet.repository.PartnerRepository;
 import com.wallet.repository.ProgramRepository;
 import com.wallet.service.interfaces.IPagingService;
 import com.wallet.service.interfaces.IPartnerService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -222,5 +223,21 @@ public class PartnerService implements IPartnerService {
         } else {
             throw new InvalidParameterException("Invalid partner !");
         }
+    }
+
+    @Override
+    public PartnerDTO getPartnerProfile(String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Partner> partner = partnerRepository.getPartnerByUserNameAndStatus(userName, true);
+        if (partner.isPresent()) {
+            return PartnerMapper.INSTANCE.toDTO(partner.get());
+        }
+        return null;
     }
 }

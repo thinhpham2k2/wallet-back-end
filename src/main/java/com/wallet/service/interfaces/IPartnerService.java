@@ -1,7 +1,10 @@
 package com.wallet.service.interfaces;
 
 import com.wallet.dto.*;
+import com.wallet.entity.Partner;
 import org.springframework.data.domain.Page;
+
+import java.util.Optional;
 
 public interface IPartnerService {
 
@@ -18,4 +21,6 @@ public interface IPartnerService {
     Page<PartnerDTO> getPartnerList(boolean status, String search, String sort, int page, int limit);
 
     JwtResponseDTO creatPartner(PartnerRegisterDTO partnerRegisterDTO, Long jwtExpiration);
+
+    PartnerDTO getPartnerProfile(String token);
 }
