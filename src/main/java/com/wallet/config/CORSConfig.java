@@ -11,7 +11,7 @@ public class CORSConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedMethods("*")
-                .allowedOrigins("http://localhost:3000", "https://swd392-pointify-partner.vercel.app")
+                .allowedOrigins("http://localhost:3000", "https://*")
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(-1);
