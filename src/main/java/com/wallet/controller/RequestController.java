@@ -39,7 +39,7 @@ public class RequestController {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             if (subtraction != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequestSubtraction(subtraction, jwt, subtraction.getToken()));
+                return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequestSubtraction(subtraction, jwt));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
             }

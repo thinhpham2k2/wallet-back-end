@@ -44,7 +44,7 @@ public class RequestService implements IRequestService {
     private final RequestTypeRepository requestTypeRepository;
 
     @Override
-    public RequestDTO createRequestSubtraction(RequestSubtractionDTO subtraction, String token, String mobileToken) {
+    public RequestDTO createRequestSubtraction(RequestSubtractionDTO subtraction, String token) {
         String userName;
         try {
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
@@ -123,10 +123,12 @@ public class RequestService implements IRequestService {
                                     membership.get().setLevel(level.get());
                                     try {
                                         NoteDTO note = new NoteDTO();
+                                        note.setImage("");
+                                        note.setData(new HashMap<>());
                                         note.setSubject("Level up !");
                                         note.setContent("You have reached the " + level.get().getLevel() + " level");
                                         //Push notification about level up
-                                        firebaseService.sendNotification(note, mobileToken);
+                                        firebaseService.sendNotification(note, subtraction.getToken());
                                     } catch (Exception e) {
                                         System.out.println("Not found mobile token to push notification");
                                     }
@@ -135,10 +137,12 @@ public class RequestService implements IRequestService {
                                 Membership newMembership = membershipRepository.save(membership.get());
                                 try {
                                     NoteDTO note = new NoteDTO();
+                                    note.setImage("");
+                                    note.setData(new HashMap<>());
                                     note.setSubject("Payment success !");
                                     note.setContent("You have completed the payment successfully");
                                     //Push notification about transaction success
-                                    firebaseService.sendNotification(note, mobileToken);
+                                    firebaseService.sendNotification(note, subtraction.getToken());
                                 } catch (Exception e) {
                                     System.out.println("Not found mobile token to push notification");
                                 }
