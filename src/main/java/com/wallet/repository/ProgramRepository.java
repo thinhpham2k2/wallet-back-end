@@ -33,6 +33,8 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
             "FETCH FIRST 1 ROW ONLY")
     Optional<Program> getProgramToken(boolean status, String code);
 
+    Boolean existsProgramByStatusAndToken(boolean status, String token);
+
     Optional<Program> getProgramByStatusAndId(boolean status, long programId);
 
     @Query("SELECT p FROM Program p " +
