@@ -1,5 +1,6 @@
 package com.wallet.controller;
 
+import com.wallet.dto.RequestAdditionDTO;
 import com.wallet.dto.RequestSubtractionDTO;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IRequestService;
@@ -34,12 +35,27 @@ public class RequestController {
 
     @PostMapping("/subtraction")
     @Secured({PARTNER})
-    @Operation(summary = "Create a request to reduce wallet balance !")
+    @Operation(summary = "Create a request to REDUCE wallet balance")
     public ResponseEntity<?> createRequestSubtraction(@RequestBody RequestSubtractionDTO subtraction, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             if (subtraction != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequestSubtraction(subtraction, jwt));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @PostMapping("/addition")
+    @Secured({PARTNER})
+    @Operation(summary = "Create a request to RAISE wallet balance")
+    public ResponseEntity<?> createRequestAddition(@RequestBody RequestAdditionDTO addition, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            if (addition != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequestAddition(addition, jwt));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
             }
