@@ -2,7 +2,6 @@ package com.wallet.service;
 
 import com.wallet.dto.ProgramDTO;
 import com.wallet.dto.ProgramExtraDTO;
-import com.wallet.entity.CustomUserDetails;
 import com.wallet.entity.Program;
 import com.wallet.entity.ProgramLevel;
 import com.wallet.jwt.JwtTokenProvider;

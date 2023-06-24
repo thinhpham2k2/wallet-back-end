@@ -1,11 +1,13 @@
 package com.wallet.controller;
 
-import com.wallet.dto.*;
+import com.wallet.dto.CustomerDTO;
+import com.wallet.dto.CustomerExtraDTO;
+import com.wallet.dto.CustomerMembershipDTO;
+import com.wallet.dto.CustomerProgramDTO;
 import com.wallet.service.interfaces.ICustomerService;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IMembershipService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,13 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController

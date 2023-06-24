@@ -32,15 +32,14 @@ public class RequestController {
 
     private final IJwtService jwtService;
 
-    @PostMapping("/token")
+    @PostMapping("/subtraction")
     @Secured({PARTNER})
     @Operation(summary = "Create a request to reduce wallet balance !")
     public ResponseEntity<?> createRequestSubtraction(@RequestBody RequestSubtractionDTO subtraction, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             if (subtraction != null) {
-
-                return ResponseEntity.status(HttpStatus.OK).body(null);
+                return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequestSubtraction(subtraction, jwt, subtraction.getToken()));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
             }
