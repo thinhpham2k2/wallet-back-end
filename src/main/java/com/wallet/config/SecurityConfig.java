@@ -1,5 +1,9 @@
 package com.wallet.config;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.wallet.jwt.JwtAuthenticationFilter;
 import com.wallet.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -56,23 +61,35 @@ public class SecurityConfig {
     }
 
     @Bean
+    public FirebaseMessaging firebaseMessaging() throws IOException {
+        GoogleCredentials googleCredentials = GoogleCredentials
+                .fromStream(new ClassPathResource("gadgetzone-49cd4-firebase-adminsdk-uluaa-d0ceb3a938.json").getInputStream());
+        FirebaseOptions firebaseOptions = FirebaseOptions
+                .builder()
+                .setCredentials(googleCredentials)
+                .build();
+        FirebaseApp app = FirebaseApp.initializeApp(firebaseOptions, "wallet-app");
+        return FirebaseMessaging.getInstance(app);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable();
-        http.authorizeHttpRequests().requestMatchers("/api/auth/sign-in", "/swagger-ui/**", "/v3/api-docs/**","/api/auth/google/**", "/partner/api/programs/token", "/partner/api/partners/register").permitAll()
+        http.authorizeHttpRequests().requestMatchers("/api/auth/sign-in", "/swagger-ui/**", "/v3/api-docs/**", "/api/auth/google/**", "/partner/api/programs/token", "/partner/api/partners/register").permitAll()
                 .anyRequest().authenticated();
 
-        http.addFilterBefore( jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class).exceptionHandling().authenticationEntryPoint(new AuthenticationEntryPoint() {
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class).exceptionHandling().authenticationEntryPoint(new AuthenticationEntryPoint() {
             @Override
             public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setHeader("message","Unauthorized");
+                response.setHeader("message", "Unauthorized");
                 response.getWriter().write("Unauthorized");
             }
         }).accessDeniedHandler(new AccessDeniedHandler() {
             @Override
             public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.setHeader("message","Access Denied!");
+                response.setHeader("message", "Access Denied!");
                 response.getWriter().write("Access Denied!");
             }
         });

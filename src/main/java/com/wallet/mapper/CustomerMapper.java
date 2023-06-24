@@ -18,6 +18,7 @@ public interface CustomerMapper {
     CustomerDTO toDTO(Customer entity);
 
     @Mapping(target = "partner", source = "partnerId", qualifiedByName = "mapPartner")
+    @Mapping(target = "membershipList", ignore = true)
     Customer toEntity(CustomerDTO dto);
 
     @Named("mapPartner")
