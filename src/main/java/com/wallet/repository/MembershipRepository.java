@@ -49,4 +49,10 @@ public interface MembershipRepository extends JpaRepository<Membership, Long> {
             "AND m.id = ?2 " +
             "AND m.customer.partner.userName = ?3")
     Optional<Membership> findByStatusAndId(boolean status, long memberId, String userName);
+
+    @Query("SELECT m FROM Membership m " +
+            "WHERE m.status = ?1 " +
+            "AND m.customer.customerId = ?2 " +
+            "AND m.program.token = ?3")
+    Optional<Membership> findByCustomerIdAndStatus(boolean status, String customerId, String token);
 }
