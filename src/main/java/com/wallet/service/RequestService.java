@@ -97,9 +97,9 @@ public class RequestService implements IRequestService {
                                         //Update wallet's total expenditure
                                         wallet.setTotalExpenditure(wallet.getTotalExpenditure().add(wallet.getBalance()));
                                         //Update wallet's balance
+                                        transactionRepository.save(new Transaction(null, wallet.getBalance(), LocalDate.now(), LocalDate.now(), subtraction.getDescription(), true, true, type.get(), wallet, newRequest));
                                         wallet.setBalance(BigDecimal.ZERO);
                                         walletRepository.save(wallet);
-                                        transactionRepository.save(new Transaction(null, wallet.getBalance(), LocalDate.now(), LocalDate.now(), subtraction.getDescription(), true, true, type.get(), wallet, newRequest));
                                     }
                                     //Check if the balance in your wallet is more than total spending
                                     else {
@@ -115,8 +115,7 @@ public class RequestService implements IRequestService {
                                     }
                                 }
                                 //Get the list of next levels
-                                List<Level> nextLevelList = programRepository.getProgramByStatusAndToken(true, token).getProgramLevelList()
-                                        .stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(membership.get().getLevel().getCondition()) > 0).toList();
+                                List<Level> nextLevelList = programRepository.getProgramByStatusAndToken(true, token).getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(membership.get().getLevel().getCondition()) > 0).toList();
                                 //Get the next levels
                                 Optional<Level> level = nextLevelList.stream().filter(l -> l.getCondition().compareTo(membership.get().getTotalExpenditure()) < 0).max(Comparator.comparing(Level::getCondition));
                                 if (level.isPresent()) {
