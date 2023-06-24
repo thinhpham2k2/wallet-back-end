@@ -127,7 +127,7 @@ public class MembershipService implements IMembershipService {
         Program program = programRepository.getProgramByStatusAndToken(true, token);
         if (program != null) {
             CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, program.getPartner().getId(), null);
-            long count = program.getPartner().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId())).count();
+            long count = program.getPartner().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
 
             //Get Level
             Optional<Level> level = program.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
@@ -166,7 +166,6 @@ public class MembershipService implements IMembershipService {
                     List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
                     customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
                 }
-
                 return customerMember;
             }
         }
