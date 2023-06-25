@@ -27,27 +27,22 @@ public class FileService implements IFileService {
 
     @Override
     public String upload(MultipartFile multipartFile) throws IOException {
-        String fileName = multipartFile.getOriginalFilename();
-        fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
+        String fileName = multipartFile.getOriginalFilename();                        // to get original file name
+        fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));  // to generated random string values for file name.
+        System.out.println(fileName);
         File file = this.convertToFile(multipartFile, fileName);
-        String TEMP_URL = this.uploadFile(file, fileName);
-        file.delete();
-
-        // Lưu trữ file vào thư mục đã được cấu hình trong biến môi trường "Upload"
-        Path uploadPath = Paths.get(System.getenv("Upload"));
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.toPath(), filePath);
-
-        return TEMP_URL;                   // Your customized response
+        System.out.println(file.toString());
+        System.out.println(file.toPath().toString());
+        // to convert multipartFile to File
+        String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
+        file.delete();                                                                // to delete the copy of uploaded file stored in the project folder
+        return TEMP_URL;                     // Your customized response
     }
 
     @Override
     public String download(String fileName) throws IOException {
         String destFileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));     // to set random strinh for destination file name
-        String destFilePath = "Z:\\Newfolder\\" + destFileName;                                    // to set destination file path
+        String destFilePath = "Z:\\New folder\\" + destFileName;                                    // to set destination file path
 
         ////////////////////////////////   Download  ////////////////////////////////////////////////////////////////////////
         Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-config.json").getInputStream());
