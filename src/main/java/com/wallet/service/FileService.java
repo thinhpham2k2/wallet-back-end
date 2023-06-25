@@ -29,10 +29,7 @@ public class FileService implements IFileService {
     public String upload(MultipartFile multipartFile) throws IOException {
         String fileName = multipartFile.getOriginalFilename();                        // to get original file name
         fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));  // to generated random string values for file name.
-        System.out.println(fileName);
         File file = this.convertToFile(multipartFile, fileName);
-        System.out.println(file.toString());
-        System.out.println(file.toPath().toString());
         // to convert multipartFile to File
         String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
         file.delete();                                                                // to delete the copy of uploaded file stored in the project folder
@@ -53,15 +50,21 @@ public class FileService implements IFileService {
     }
 
     private String uploadFile(File file, String fileName) throws IOException {
+        System.out.println("1");
         BlobId blobId = BlobId.of("upload-file-2ac29.appspot.com", fileName);
+        System.out.println("2");
         Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-config.json").getInputStream());
+        System.out.println("3");
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+        System.out.println("4");
         byte[] fileBytes = Files.readAllBytes(file.toPath());
-
+        System.out.println("5");
         // Xác định kiểu MIME của tệp tin
+        System.out.println("6");
         Path filePath = Paths.get(file.getAbsolutePath());
+        System.out.println("7");
         String mimeType = Files.probeContentType(filePath);
-
+        System.out.println("8");
         // Kiểm tra kiểu MIME của tệp tin và cấu hình đúng loại tệp cho blob trên Firebase
         BlobInfo.Builder blobInfoBuilder = BlobInfo.newBuilder(blobId);
         if (mimeType != null) {
