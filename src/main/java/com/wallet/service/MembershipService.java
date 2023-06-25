@@ -123,6 +123,11 @@ public class MembershipService implements IMembershipService {
     }
 
     @Override
+    public CustomerMembershipDTO createMembership(String token, String customerId) {
+        return null;
+    }
+
+    @Override
     public CustomerMembershipDTO createCustomer(String token, CustomerProgramDTO customer) {
         Program program = programRepository.getProgramByStatusAndToken(true, token);
         if (program != null) {

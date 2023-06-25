@@ -6,9 +6,12 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.wallet.dto.NoteDTO;
 import com.wallet.service.interfaces.IFirebaseMessagingService;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@Transactional
 public class FirebaseMessagingService implements IFirebaseMessagingService {
     private final FirebaseMessaging firebaseMessaging;
 

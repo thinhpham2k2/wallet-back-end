@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
 
@@ -14,7 +15,7 @@ import java.io.Serializable;
 public class PartnerUpdateDTO implements Serializable {
 
     private String fullName;
-    private String image;
+    private MultipartFile image;
     private String phone;
     private String address;
     private Boolean state;
