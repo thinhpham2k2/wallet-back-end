@@ -6,11 +6,13 @@ import com.google.cloud.storage.*;
 import com.wallet.service.interfaces.IFileService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -57,7 +59,9 @@ public class FileService implements IFileService {
         System.out.println("3");
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
         System.out.println("4");
-        byte[] fileBytes = Files.readAllBytes(file.toPath());
+        byte[] fileBytes = IOUtils.toByteArray(new FileInputStream(file));
+        System.out.println("4.5");
+        fileBytes = Files.readAllBytes(file.toPath());
         System.out.println("5");
         // Xác định kiểu MIME của tệp tin
         System.out.println("6");
