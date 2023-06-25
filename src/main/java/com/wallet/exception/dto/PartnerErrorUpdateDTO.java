@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PartnerErrorUpdateDTO {
 
-    private String id;
     private String fullName;
     private String phone;
-
+    private String image;
+    private String state;
 }

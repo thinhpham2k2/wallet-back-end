@@ -87,4 +87,19 @@ public class MembershipController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
+
+    @PostMapping("")
+    @Secured({PARTNER})
+    @Operation(summary = "Create membership for customers that have been mapped into the wallet system")
+    public ResponseEntity<?> createCustomerMembershipInform(@RequestParam(defaultValue = "") String customerId, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            CustomerMembershipDTO result = membershipService.createMembership(jwt, customerId);
+            if (result != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership detail !");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
 }

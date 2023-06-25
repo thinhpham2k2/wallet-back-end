@@ -1,9 +1,6 @@
 package com.wallet.service;
 
-import com.wallet.dto.NoteDTO;
-import com.wallet.dto.RequestAdditionDTO;
-import com.wallet.dto.RequestDTO;
-import com.wallet.dto.RequestSubtractionDTO;
+import com.wallet.dto.*;
 import com.wallet.entity.*;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.RequestMapper;
@@ -45,6 +42,89 @@ public class RequestService implements IRequestService {
     private final RequestTypeRepository requestTypeRepository;
 
     @Override
+    public RequestDTO createRequest(RequestCreationDTO creation, String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        //Get partner
+        Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
+        //Check partner and partner's program
+        if (partner.isPresent() && programRepository.existsProgramByStatusAndToken(true, token)) {
+            //Get membership
+            Optional<Membership> membership = membershipRepository.findByCustomerIdAndStatus(true, creation.getCustomerId(), token);
+            //Check membership
+            if (membership.isPresent()) {
+                //Get request type
+                Optional<RequestType> requestType = requestTypeRepository.findRequestTypeByStatusAndId(true, 2L);
+                //Check request type
+                if (requestType.isPresent()) {
+                    //Create new request
+                    Request newRequest = requestRepository.save(new Request(null, creation.getAmount(), LocalDate.now(), LocalDate.now(), creation.getDescription(), true, true, partner.get(), requestType.get(), null));
+                    //Get transaction type
+                    Optional<Type> type = typeRepository.findTypeByStatusAndId(true, 2L);
+                    //Check request type
+                    if (type.isPresent()) {
+                        //Get wallet
+                        Optional<Wallet> wallet = walletRepository.findFirstByStatusAndTypeIdAndMembershipId(true, 1L, membership.get().getId());
+                        //Check wallet
+                        if (wallet.isPresent()) {
+                            //Update membership's total expenditure
+                            membership.get().setTotalExpenditure(membership.get().getTotalExpenditure().add(creation.getAmount()));
+                            transactionRepository.save(new Transaction(null, creation.getAmount(), LocalDate.now(), LocalDate.now(), creation.getDescription(), true, true, type.get(), wallet.get(), newRequest));
+                            //Get the list of next levels
+                            List<Level> nextLevels = programRepository.getProgramByStatusAndToken(true, token).getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(membership.get().getLevel().getCondition()) > 0).toList();
+                            //Get the next levels
+                            Optional<Level> level = nextLevels.stream().filter(l -> l.getCondition().compareTo(membership.get().getTotalExpenditure()) <= 0).max(Comparator.comparing(Level::getCondition));
+                            if (level.isPresent()) {
+                                membership.get().setLevel(level.get());
+                                try {
+                                    NoteDTO note = new NoteDTO();
+                                    note.setImage("");
+                                    note.setData(new HashMap<>());
+                                    note.setSubject("Level up !");
+                                    note.setContent("You have reached the " + level.get().getLevel() + " level");
+                                    //Push notification about level up
+                                    firebaseService.sendNotification(note, creation.getToken());
+                                } catch (Exception e) {
+                                    System.out.println("Not found mobile token to push notification");
+                                }
+                            }
+                            //Update membership's level and total expenditure
+                            membershipRepository.save(membership.get());
+                            try {
+                                NoteDTO note = new NoteDTO();
+                                note.setImage("");
+                                note.setData(new HashMap<>());
+                                note.setSubject("Payment success !");
+                                note.setContent("You have completed the payment successfully");
+                                //Push notification about level up
+                                firebaseService.sendNotification(note, creation.getToken());
+                            } catch (Exception e) {
+                                System.out.println("Not found mobile token to push notification");
+                            }
+                            return RequestMapper.INSTANCE.toDTO(newRequest);
+                        } else {
+                            throw new InvalidParameterException("Not found wallet");
+                        }
+                    } else {
+                        throw new InvalidParameterException("Not found transaction type");
+                    }
+                } else {
+                    throw new InvalidParameterException("Not found request type");
+                }
+            } else {
+                throw new InvalidParameterException("Invalid customer information");
+            }
+        } else {
+            throw new InvalidParameterException("Invalid partner information");
+        }
+    }
+
+    @Override
     public RequestDTO createRequestAddition(RequestAdditionDTO addition, String token) {
         String userName;
         try {
@@ -77,14 +157,16 @@ public class RequestService implements IRequestService {
                         if (wallet.isPresent()) {
                             //Update wallet date updated
                             wallet.get().setDateUpdated(LocalDate.now());
-                            //Update membership's total expenditure
+                            //Update membership's total receipt
                             membership.get().setTotalReceipt(membership.get().getTotalReceipt().add(addition.getAmount()));
-                            //Update wallet's total expenditure
+                            //Update wallet's total receipt
                             wallet.get().setTotalReceipt(wallet.get().getTotalReceipt().add(addition.getAmount()));
                             transactionRepository.save(new Transaction(null, addition.getAmount(), LocalDate.now(), LocalDate.now(), addition.getDescription(), true, true, type.get(), wallet.get(), newRequest));
                             //Update wallet's balance
                             wallet.get().setBalance(wallet.get().getBalance().add(addition.getAmount()));
                             walletRepository.save(wallet.get());
+                            //Update membership's level and total expenditure
+                            membershipRepository.save(membership.get());
                             try {
                                 NoteDTO note = new NoteDTO();
                                 note.setImage("");
@@ -204,7 +286,7 @@ public class RequestService implements IRequestService {
                                     }
                                 }
                                 //Update membership's level and total expenditure
-                                Membership newMembership = membershipRepository.save(membership.get());
+                                membershipRepository.save(membership.get());
                                 try {
                                     NoteDTO note = new NoteDTO();
                                     note.setImage("");

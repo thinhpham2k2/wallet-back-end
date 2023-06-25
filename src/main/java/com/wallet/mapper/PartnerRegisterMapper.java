@@ -11,11 +11,13 @@ public interface PartnerRegisterMapper {
 
     PartnerRegisterMapper INSTANCE = Mappers.getMapper(PartnerRegisterMapper.class);
 
-    PartnerRegisterDTO toDTO(Partner entity);
-
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "image", ignore = true)
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "customerList", ignore = true)
+    @Mapping(target = "programList", ignore = true)
+    @Mapping(target = "requestList", ignore = true)
     Partner toEntity(PartnerRegisterDTO dto);
 
 }

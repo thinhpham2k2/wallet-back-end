@@ -14,6 +14,7 @@ import com.wallet.mapper.ProgramMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.CustomerRepository;
 import com.wallet.repository.PartnerRepository;
+import com.wallet.service.interfaces.IFileService;
 import com.wallet.service.interfaces.IPagingService;
 import com.wallet.service.interfaces.IPartnerService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -46,6 +47,8 @@ public class PartnerService implements IPartnerService {
     private final CustomUserDetailsService customUserDetailsService;
 
     private final IPagingService pagingService;
+
+    private final IFileService fileService;
 
     @Override
     public PartnerDTO getByUsernameAndStatus(String userName, boolean status) {
@@ -129,6 +132,15 @@ public class PartnerService implements IPartnerService {
             partnerErrorDTO.setPassword("The password must be 8 characters or more !");
         }
 
+        //Validate Image
+        String linkImg;
+        try {
+            linkImg = fileService.upload(partnerRegisterDTO.getImage());
+        } catch (Exception e){
+            partnerErrorDTO.setImage("Invalid image file !");
+            throw new PartnerException(partnerErrorDTO, null);
+        }
+
         if (flag) {
             throw new PartnerException(partnerErrorDTO, null);
         } else {
@@ -137,6 +149,7 @@ public class PartnerService implements IPartnerService {
             partner.setId(null);
             partner.setState(true);
             partner.setStatus(true);
+            partner.setImage(linkImg);
             partner.setPassword(passwordEncoder.encode(partnerRegisterDTO.getPassword()));
             PartnerDTO partnerRegister = PartnerMapper.INSTANCE.toDTO(partnerRepository.save(partner));
             return new JwtResponseDTO(jwtTokenProvider.generateToken((CustomUserDetails) customUserDetailsService.loadUserByPartner(partnerRegister), jwtExpiration), partnerRegister, null);
@@ -156,59 +169,64 @@ public class PartnerService implements IPartnerService {
         if (partner.isPresent()) {
             partnerExtra.setNumOfCustomers(customerRepository.countAllByStatusAndPartnerId(true, id));
             partnerExtra.setPartner(PartnerMapper.INSTANCE.toDTO(partner.get()));
-            partnerExtra.setProgramList(partner.get().getProgramList()
-                    .stream().filter(p -> p.getStatus().equals(true)).map(ProgramMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            partnerExtra.setProgramList(partner.get().getProgramList().stream().filter(p -> p.getStatus().equals(true)).map(ProgramMapper.INSTANCE::toDTO).collect(Collectors.toList()));
             return partnerExtra;
         }
         return null;
     }
 
     @Override
-    public PartnerUpdateDTO updatePartner(PartnerUpdateDTO partnerDTO, Long id) {
+    public PartnerDTO updatePartner(PartnerUpdateDTO partnerDTO, String token) {
         boolean flag = false;
         PartnerErrorUpdateDTO partnerErrorDTO = new PartnerErrorUpdateDTO();
-
-        //Validate Id
-        if (id == null) {
-            flag = true;
-            partnerErrorDTO.setId("Partner Id mustn't be blank !");
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
         }
-
-        //Validate Full name
-        if (partnerDTO.getFullName().isBlank()) {
-            flag = true;
-            partnerErrorDTO.setFullName("Full name mustn't be blank !");
-        }
-
-        //Validate Phone
-        if (partnerDTO.getPhone().length() > 17) {
-            flag = true;
-            partnerErrorDTO.setPhone("Phone number length must be 17 characters or less !");
-        }
-
-        //Validate State
-        if (partnerDTO.getState() == null) {
-            flag = true;
-            partnerErrorDTO.setPhone("Invalid state !");
-        }
-
-        if (flag) {
-            throw new PartnerException(null, partnerErrorDTO);
-        } else {
-            Optional<Partner> partnerOptional = partnerRepository.findPartnerById(id);
-            if (partnerOptional.isPresent()) {
-
-                partnerOptional.get().setFullName(partnerDTO.getFullName());
-                partnerOptional.get().setImage(partnerDTO.getImage());
-                partnerOptional.get().setPhone(partnerDTO.getPhone());
-                partnerOptional.get().setAddress(partnerDTO.getAddress());
-                partnerOptional.get().setState(partnerDTO.getState());
-
-                Partner partner = partnerRepository.save(partnerOptional.get());
-                return PartnerUpdateMapper.INSTANCE.toDTO(partner);
-            } else {
-                throw new InvalidParameterException("Invalid partner !");
+        Optional<Partner> partner = partnerRepository.getPartnerByUserNameAndStatus(userName, true);
+        if (partner.isPresent()) {
+            //Validate Full name
+            if (partnerDTO.getFullName().isBlank()) {
+                flag = true;
+                partnerErrorDTO.setFullName("Full name mustn't be blank !");
             }
+
+            //Validate Phone
+            if (partnerDTO.getPhone().length() > 17) {
+                flag = true;
+                partnerErrorDTO.setPhone("Phone number length must be 17 characters or less !");
+            }
+
+            //Validate State
+            if (partnerDTO.getState() == null) {
+                flag = true;
+                partnerErrorDTO.setState("Invalid state !");
+            }
+
+            //Validate Image
+            String linkImg;
+            try {
+                linkImg = fileService.upload(partnerDTO.getImage());
+            } catch (Exception e){
+                partnerErrorDTO.setImage("Invalid image file !");
+                throw new PartnerException(null, partnerErrorDTO);
+            }
+
+            if (flag) {
+                throw new PartnerException(null, partnerErrorDTO);
+            } else {
+                partner.get().setFullName(partnerDTO.getFullName());
+                partner.get().setImage(linkImg);
+                partner.get().setPhone(partnerDTO.getPhone());
+                partner.get().setAddress(partnerDTO.getAddress());
+                partner.get().setState(partnerDTO.getState());
+                return PartnerMapper.INSTANCE.toDTO(partnerRepository.save(partner.get()));
+            }
+        } else {
+            throw new InvalidParameterException("Invalid partner !");
         }
     }
 
@@ -234,9 +252,6 @@ public class PartnerService implements IPartnerService {
             throw new InvalidParameterException("Invalid JWT token");
         }
         Optional<Partner> partner = partnerRepository.getPartnerByUserNameAndStatus(userName, true);
-        if (partner.isPresent()) {
-            return PartnerMapper.INSTANCE.toDTO(partner.get());
-        }
-        return null;
+        return partner.map(PartnerMapper.INSTANCE::toDTO).orElse(null);
     }
 }

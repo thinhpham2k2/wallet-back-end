@@ -11,6 +11,7 @@ public class PartnerErrorDTO {
 
     private String userName;
     private String fullName;
+    private String image;
     private String code;
     private String email;
     private String phone;

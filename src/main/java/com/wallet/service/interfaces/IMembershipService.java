@@ -18,5 +18,7 @@ public interface IMembershipService {
 
     CustomerMembershipDTO createCustomer(String token, CustomerProgramDTO customer);
 
+    CustomerMembershipDTO createMembership(String token, String customerId);
+
     MembershipExtraDTO getMemberById(String token, long memberId, boolean isAdmin);
 }

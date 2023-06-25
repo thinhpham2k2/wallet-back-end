@@ -3,6 +3,7 @@ package com.wallet.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
 
@@ -16,7 +17,7 @@ public class PartnerRegisterDTO implements Serializable {
     private String fullName;
     private String code;
     private String email;
-    private String image;
+    private MultipartFile image;
     private String phone;
     private String address;
 

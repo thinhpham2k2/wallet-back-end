@@ -11,7 +11,7 @@ public interface IPartnerService {
 
     PartnerExtraDTO getPartnerExtra(Long id, boolean status);
 
-    PartnerUpdateDTO updatePartner(PartnerUpdateDTO partnerDTO, Long id);
+    PartnerDTO updatePartner(PartnerUpdateDTO partnerDTO, String token);
 
     PartnerDTO deletePartner(Long id);
 

@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface WalletRepository extends JpaRepository<Wallet, Long> {
 
     Optional<Wallet> findWalletByStatusAndId(boolean status, long id);
+
+    Optional<Wallet> findFirstByStatusAndTypeIdAndMembershipId(boolean status, long id, long membershipId);
 }

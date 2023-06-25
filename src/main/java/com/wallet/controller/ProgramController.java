@@ -77,7 +77,7 @@ public class ProgramController {
 
 
     @PostMapping("/token")
-    @Operation(summary = "Get token program")
+    @Operation(summary = "Get program token")
     public ResponseEntity<?> login(@RequestBody LoginFormDTO loginFormDTO) throws MethodArgumentTypeMismatchException {
         String userName = loginFormDTO.getUserName();
         String pass = loginFormDTO.getPassword();
