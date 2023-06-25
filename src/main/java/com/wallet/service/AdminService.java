@@ -7,7 +7,6 @@ import com.wallet.dto.JwtResponseDTO;
 import com.wallet.entity.Admin;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.exception.AdminException;
-import com.wallet.exception.PartnerException;
 import com.wallet.exception.dto.AdminErrorDTO;
 import com.wallet.exception.dto.AdminErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
@@ -131,12 +130,14 @@ public class AdminService implements IAdminService {
         }
 
         //Validate Image
-        String linkImg;
-        try {
-            linkImg = fileService.upload(adminDTO.getImage());
-        } catch (Exception e) {
-            errorUpdateDTO.setImage("Invalid image file !");
-            throw new AdminException(errorUpdateDTO, null);
+        String linkImg = "";
+        if (!flag) {
+            try {
+                linkImg = fileService.upload(adminDTO.getImage());
+            } catch (Exception e) {
+                errorUpdateDTO.setImage("Invalid image file !");
+                throw new AdminException(errorUpdateDTO, null);
+            }
         }
 
         if (flag) {
@@ -223,12 +224,14 @@ public class AdminService implements IAdminService {
         }
 
         //Validate Image
-        String linkImg;
-        try {
-            linkImg = fileService.upload(adminRegisterDTO.getImage());
-        } catch (Exception e) {
-            adminErrorDTO.setImage("Invalid image file !");
-            throw new AdminException(null, adminErrorDTO);
+        String linkImg = "";
+        if (!flag) {
+            try {
+                linkImg = fileService.upload(adminRegisterDTO.getImage());
+            } catch (Exception e) {
+                adminErrorDTO.setImage("Invalid image file !");
+                throw new AdminException(null, adminErrorDTO);
+            }
         }
 
         if (flag) {

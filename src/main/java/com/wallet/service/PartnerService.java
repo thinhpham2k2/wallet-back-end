@@ -9,7 +9,6 @@ import com.wallet.exception.dto.PartnerErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.mapper.PartnerRegisterMapper;
-import com.wallet.mapper.PartnerUpdateMapper;
 import com.wallet.mapper.ProgramMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.CustomerRepository;
@@ -133,12 +132,14 @@ public class PartnerService implements IPartnerService {
         }
 
         //Validate Image
-        String linkImg;
-        try {
-            linkImg = fileService.upload(partnerRegisterDTO.getImage());
-        } catch (Exception e){
-            partnerErrorDTO.setImage("Invalid image file !");
-            throw new PartnerException(partnerErrorDTO, null);
+        String linkImg = "";
+        if (!flag) {
+            try {
+                linkImg = fileService.upload(partnerRegisterDTO.getImage());
+            } catch (Exception e) {
+                partnerErrorDTO.setImage("Invalid image file !");
+                throw new PartnerException(partnerErrorDTO, null);
+            }
         }
 
         if (flag) {
@@ -207,12 +208,14 @@ public class PartnerService implements IPartnerService {
             }
 
             //Validate Image
-            String linkImg;
-            try {
-                linkImg = fileService.upload(partnerDTO.getImage());
-            } catch (Exception e){
-                partnerErrorDTO.setImage("Invalid image file !");
-                throw new PartnerException(null, partnerErrorDTO);
+            String linkImg = "";
+            if (!flag) {
+                try {
+                    linkImg = fileService.upload(partnerDTO.getImage());
+                } catch (Exception e) {
+                    partnerErrorDTO.setImage("Invalid image file !");
+                    throw new PartnerException(null, partnerErrorDTO);
+                }
             }
 
             if (flag) {
