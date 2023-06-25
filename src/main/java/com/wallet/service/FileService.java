@@ -51,7 +51,6 @@ public class FileService implements IFileService {
     private String uploadFile(File file, String fileName) throws IOException {
         BlobId blobId = BlobId.of("upload-file-2ac29.appspot.com", fileName);
         Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-config.json").getInputStream());
-        System.out.println(credentials.toString() + "Phạm Quốc Thịnh");
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
         byte[] fileBytes = Files.readAllBytes(file.toPath());
 

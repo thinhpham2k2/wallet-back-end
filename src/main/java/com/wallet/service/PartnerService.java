@@ -213,6 +213,7 @@ public class PartnerService implements IPartnerService {
                 try {
                     linkImg = fileService.upload(partnerDTO.getImage());
                 } catch (Exception e) {
+                    System.out.println(e.toString());
                     partnerErrorDTO.setImage("Invalid image file !");
                     throw new PartnerException(null, partnerErrorDTO);
                 }
