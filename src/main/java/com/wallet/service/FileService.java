@@ -34,7 +34,7 @@ public class FileService implements IFileService {
         File file = this.convertToFile(multipartFile, fileName);
         // to convert multipartFile to File
         String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
-        file.delete();                                                                // to delete the copy of uploaded file stored in the project folder
+        file.deleteOnExit();                                                                // to delete the copy of uploaded file stored in the project folder
         return TEMP_URL;                     // Your customized response
     }
 
