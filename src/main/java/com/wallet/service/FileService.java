@@ -33,14 +33,7 @@ public class FileService implements IFileService {
             fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));  // to generated random string values for file name.
             File file = this.convertToFile(multipartFile, fileName);                      // to convert multipartFile to File
             String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
-            file.delete();                                                                // to delete the copy of uploaded file stored in the project folder
-            // Delete temporary file
-            Path tempFilePath = Paths.get(file.getAbsolutePath());
-            try {
-                Files.delete(tempFilePath);
-            } catch (IOException e) {
-                System.out.println("Failed to delete temporary file: " + e.getMessage());
-            }
+            file.deleteOnExit();
         return TEMP_URL;                     // Your customized response
     }
 
