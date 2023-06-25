@@ -15,5 +15,6 @@ public class AdminErrorDTO {
     private String phone;
     private String password;
     private String dob;
+    private String image;
 
 }
