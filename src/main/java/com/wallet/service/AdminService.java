@@ -7,6 +7,7 @@ import com.wallet.dto.JwtResponseDTO;
 import com.wallet.entity.Admin;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.exception.AdminException;
+import com.wallet.exception.PartnerException;
 import com.wallet.exception.dto.AdminErrorDTO;
 import com.wallet.exception.dto.AdminErrorUpdateDTO;
 import com.wallet.jwt.JwtTokenProvider;
@@ -15,6 +16,7 @@ import com.wallet.mapper.AdminRegisterMapper;
 import com.wallet.repository.AdminRepository;
 import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IAdminService;
+import com.wallet.service.interfaces.IFileService;
 import com.wallet.service.interfaces.IPagingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,8 @@ public class AdminService implements IAdminService {
     private final CustomUserDetailsService customUserDetailsService;
 
     private final IPagingService pagingService;
+
+    private final IFileService fileService;
 
     @Override
     public AdminDTO getByUsernameAndStatus(String userName, boolean status) {
@@ -126,19 +130,26 @@ public class AdminService implements IAdminService {
             errorUpdateDTO.setPhone("Duplicate phone number !");
         }
 
+        //Validate Image
+        String linkImg;
+        try {
+            linkImg = fileService.upload(adminDTO.getImage());
+        } catch (Exception e) {
+            errorUpdateDTO.setImage("Invalid image file !");
+            throw new AdminException(errorUpdateDTO, null);
+        }
+
         if (flag) {
             throw new AdminException(errorUpdateDTO, null);
         } else {
             Optional<Admin> adminOptional = adminRepository.findById(id);
             if (adminOptional.isPresent()) {
-
                 adminOptional.get().setFullName(adminDTO.getFullName());
                 adminOptional.get().setDob(adminDTO.getDob());
-                adminOptional.get().setImage(adminDTO.getImage());
+                adminOptional.get().setImage(linkImg);
                 adminOptional.get().setPhone(adminDTO.getPhone());
-
-                Admin admin = adminRepository.save(adminOptional.get());
-                return AdminMapper.INSTANCE.toDTO(admin);
+                adminOptional.get().setStatus(adminDTO.getStatus());
+                return AdminMapper.INSTANCE.toDTO(adminRepository.save(adminOptional.get()));
             } else {
                 throw new InvalidParameterException("Invalid admin !");
             }
@@ -211,6 +222,15 @@ public class AdminService implements IAdminService {
             adminErrorDTO.setPassword("The password must be 8 characters or more !");
         }
 
+        //Validate Image
+        String linkImg;
+        try {
+            linkImg = fileService.upload(adminRegisterDTO.getImage());
+        } catch (Exception e) {
+            adminErrorDTO.setImage("Invalid image file !");
+            throw new AdminException(null, adminErrorDTO);
+        }
+
         if (flag) {
             throw new AdminException(null, adminErrorDTO);
         } else {
@@ -218,6 +238,7 @@ public class AdminService implements IAdminService {
             Admin admin = AdminRegisterMapper.INSTANCE.toEntity(adminRegisterDTO);
             admin.setId(null);
             admin.setStatus(true);
+            admin.setImage(linkImg);
             admin.setPassword(passwordEncoder.encode(adminRegisterDTO.getPassword()));
             AdminDTO adminDTO1 = AdminMapper.INSTANCE.toDTO(adminRepository.save(admin));
             return new JwtResponseDTO(jwtTokenProvider.generateToken((CustomUserDetails) customUserDetailsService.loadUserByAdmin(adminDTO1), jwtExpiration), null, adminDTO1);
@@ -226,12 +247,12 @@ public class AdminService implements IAdminService {
 
     @Override
     public Page<AdminDTO> getAdminList(boolean status, String search, String sort, int page, int limit) {
-        if(limit < 1)  throw new InvalidParameterException("Page size must not be less than one!");
-        if(page < 0)  throw new InvalidParameterException("Page number must not be less than zero!");
+        if (limit < 1) throw new InvalidParameterException("Page size must not be less than one!");
+        if (page < 0) throw new InvalidParameterException("Page number must not be less than zero!");
         List<Sort.Order> order = new ArrayList<>();
         Set<String> sourceFieldList = pagingService.getAllFields(Admin.class);
         String[] subSort = sort.split(",");
-        if(pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
+        if (pagingService.checkPropertPresent(sourceFieldList, subSort[0])) {
             order.add(new Sort.Order(pagingService.getSortDirection(subSort[1]), subSort[0]));
         } else {
             throw new InvalidParameterException(subSort[0] + " is not a propertied of Partner!");

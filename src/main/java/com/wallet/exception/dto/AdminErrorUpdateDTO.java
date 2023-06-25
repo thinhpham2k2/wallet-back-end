@@ -13,5 +13,6 @@ public class AdminErrorUpdateDTO {
     private String fullName;
     private String dob;
     private String phone;
+    private String image;
 
 }

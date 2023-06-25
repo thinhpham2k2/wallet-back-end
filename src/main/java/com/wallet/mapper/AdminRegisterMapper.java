@@ -11,8 +11,8 @@ public interface AdminRegisterMapper {
 
     AdminRegisterMapper INSTANCE = Mappers.getMapper(AdminRegisterMapper.class);
 
-    AdminRegisterDTO toDTO(Admin entity);
-
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "image", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "status", ignore = true)
     Admin toEntity(AdminRegisterDTO dto);

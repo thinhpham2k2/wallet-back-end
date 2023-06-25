@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -217,17 +218,18 @@ public class AdminController {
         }
     }
 
-    @PutMapping("/admins/{id}")
+    @PutMapping(value = "/admins/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Secured({ADMIN})
     @Operation(summary = "Update a admin account")
-    public ResponseEntity<?> updatePartner(@RequestBody AdminUpdateDTO adminDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
+    public ResponseEntity<?> updatePartner(@ModelAttribute AdminUpdateDTO adminDTO, @PathVariable(value = "id") Long id) throws MethodArgumentTypeMismatchException {
         AdminDTO admin = adminService.updateAdmin(adminDTO, id);
         return ResponseEntity.status(HttpStatus.OK).body(admin);
     }
 
-    @PostMapping("/admins")
+    @PostMapping(value = "/admins", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Secured({ADMIN})
     @Operation(summary = "Create a admin account")
-    public ResponseEntity<?> registerPartner(@RequestBody AdminRegisterDTO adminRegisterDTO) throws MethodArgumentTypeMismatchException {
+    public ResponseEntity<?> registerPartner(@ModelAttribute AdminRegisterDTO adminRegisterDTO) throws MethodArgumentTypeMismatchException {
         JwtResponseDTO jwtResponseDTO = adminService.createAdmin(adminRegisterDTO, 17280000000L);
         if (jwtResponseDTO.getAdminDTO() != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body(jwtResponseDTO);
