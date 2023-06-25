@@ -41,16 +41,16 @@ public class FileService implements IFileService {
         String destFilePath = "Z:\\New folder\\" + destFileName;                                    // to set destination file path
 
         ////////////////////////////////   Download  ////////////////////////////////////////////////////////////////////////
-        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("upload-file-2ac29-firebase-adminsdk-fnnc1-373b1b1f35.json").getInputStream());
+        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-fnnc1-373b1b1f35.json").getInputStream());
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        Blob blob = storage.get(BlobId.of("your bucket name", fileName));
+        Blob blob = storage.get(BlobId.of("upload-file-2ac29.appspot.com", fileName));
         blob.downloadTo(Paths.get(destFilePath));
         return "Successfully Downloaded!";
     }
 
     private String uploadFile(File file, String fileName) throws IOException {
         BlobId blobId = BlobId.of("upload-file-2ac29.appspot.com", fileName);
-        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("upload-file-2ac29-firebase-adminsdk-fnnc1-373b1b1f35.json").getInputStream());
+        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-fnnc1-373b1b1f35.json").getInputStream());
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
         byte[] fileBytes = Files.readAllBytes(file.toPath());
 
