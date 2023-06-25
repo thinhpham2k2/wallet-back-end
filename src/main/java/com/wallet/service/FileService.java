@@ -6,11 +6,13 @@ import com.google.cloud.storage.*;
 import com.wallet.service.interfaces.IFileService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -32,7 +34,14 @@ public class FileService implements IFileService {
             File file = this.convertToFile(multipartFile, fileName);                      // to convert multipartFile to File
             String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
             file.delete();                                                                // to delete the copy of uploaded file stored in the project folder
-            return TEMP_URL;                     // Your customized response
+            // Delete temporary file
+            Path tempFilePath = Paths.get(file.getAbsolutePath());
+            try {
+                Files.delete(tempFilePath);
+            } catch (IOException e) {
+                System.out.println("Failed to delete temporary file: " + e.getMessage());
+            }
+        return TEMP_URL;                     // Your customized response
     }
 
     @Override
@@ -52,7 +61,7 @@ public class FileService implements IFileService {
         BlobId blobId = BlobId.of("upload-file-2ac29.appspot.com", fileName);
         Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("upload-file-2ac29-firebase-adminsdk-fnnc1-373b1b1f35.json").getInputStream());
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        byte[] fileBytes = Files.readAllBytes(file.toPath());
+        byte[] fileBytes = IOUtils.toByteArray(new FileInputStream(file));
 
         // Xác định kiểu MIME của tệp tin
         Path filePath = Paths.get(file.getAbsolutePath());
@@ -77,7 +86,6 @@ public class FileService implements IFileService {
         File tempFile = new File(fileName);
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(multipartFile.getBytes());
-            fos.close();
         }
         return tempFile;
     }
