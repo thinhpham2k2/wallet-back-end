@@ -56,14 +56,9 @@ public class FileService implements IFileService {
         Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-config.json").getInputStream());
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
         byte[] fileBytes = IOUtils.toByteArray(new FileInputStream(file));
-//        fileBytes = Files.readAllBytes(file.toPath());
-        System.out.println("5");
         // Xác định kiểu MIME của tệp tin
-        System.out.println("6");
         Path filePath = Paths.get(file.getAbsolutePath());
-        System.out.println("7");
         String mimeType = Files.probeContentType(filePath);
-        System.out.println("8");
         // Kiểm tra kiểu MIME của tệp tin và cấu hình đúng loại tệp cho blob trên Firebase
         BlobInfo.Builder blobInfoBuilder = BlobInfo.newBuilder(blobId);
         if (mimeType != null) {
