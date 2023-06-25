@@ -52,16 +52,11 @@ public class FileService implements IFileService {
     }
 
     private String uploadFile(File file, String fileName) throws IOException {
-        System.out.println("1");
         BlobId blobId = BlobId.of("upload-file-2ac29.appspot.com", fileName);
-        System.out.println("2");
         Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-config.json").getInputStream());
-        System.out.println("3");
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        System.out.println("4");
         byte[] fileBytes = IOUtils.toByteArray(new FileInputStream(file));
-        System.out.println("4.5");
-        fileBytes = Files.readAllBytes(file.toPath());
+//        fileBytes = Files.readAllBytes(file.toPath());
         System.out.println("5");
         // Xác định kiểu MIME của tệp tin
         System.out.println("6");
