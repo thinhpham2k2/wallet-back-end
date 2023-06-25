@@ -29,11 +29,11 @@ public class FileService implements IFileService {
 
     @Override
     public String upload(MultipartFile multipartFile) throws IOException {
-            String fileName = multipartFile.getOriginalFilename();                        // to get original file name
-            fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));  // to generated random string values for file name.
-            File file = this.convertToFile(multipartFile, fileName);                      // to convert multipartFile to File
-            String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
-            file.deleteOnExit();
+        String fileName = multipartFile.getOriginalFilename();                        // to get original file name
+        fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));  // to generated random string values for file name.
+        File file = this.convertToFile(multipartFile, fileName);                      // to convert multipartFile to File
+        String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
+        file.deleteOnExit();
         return TEMP_URL;                     // Your customized response
     }
 
