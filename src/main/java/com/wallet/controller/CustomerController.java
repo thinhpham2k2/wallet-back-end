@@ -72,15 +72,30 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 
+    @PostMapping("/membership")
+    @Secured({PARTNER})
+    @Operation(summary = "Create customer and membership")
+    public ResponseEntity<?> createCustomerMembership(@RequestBody CustomerProgramDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if(jwt != null) {
+            CustomerMembershipDTO result = membershipService.createCustomerMembership(jwt, customer);
+            if(result != null){
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create customer fail !");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
     @PostMapping("")
     @Secured({PARTNER})
-    @Operation(summary = "Create customer by using program token")
+    @Operation(summary = "Create customer")
     public ResponseEntity<?> createCustomer(@RequestBody CustomerProgramDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
         if(jwt != null) {
             CustomerMembershipDTO result = membershipService.createCustomer(jwt, customer);
             if(result != null){
-                return ResponseEntity.status(HttpStatus.OK).body(result);
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create customer fail !");
         }

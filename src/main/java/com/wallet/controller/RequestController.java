@@ -41,7 +41,7 @@ public class RequestController {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             if (subtraction != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequestSubtraction(subtraction, jwt));
+                return ResponseEntity.status(HttpStatus.CREATED).body(requestService.createRequestSubtraction(subtraction, jwt));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
             }
@@ -56,7 +56,7 @@ public class RequestController {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             if (addition != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequestAddition(addition, jwt));
+                return ResponseEntity.status(HttpStatus.CREATED).body(requestService.createRequestAddition(addition, jwt));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
             }
@@ -71,7 +71,7 @@ public class RequestController {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             if (creation != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(requestService.createRequest(creation, jwt));
+                return ResponseEntity.status(HttpStatus.CREATED).body(requestService.createRequest(creation, jwt));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
             }
