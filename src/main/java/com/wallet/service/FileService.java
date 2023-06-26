@@ -6,6 +6,7 @@ import com.google.cloud.storage.*;
 import com.wallet.service.interfaces.IFileService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -31,10 +36,13 @@ public class FileService implements IFileService {
     public String upload(MultipartFile multipartFile) throws IOException {
         String fileName = multipartFile.getOriginalFilename();                        // to get original file name
         fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));  // to generated random string values for file name.
-        File file = this.convertToFile(multipartFile, fileName);                      // to convert multipartFile to File
-        String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
-        file.deleteOnExit();
-        return TEMP_URL;                     // Your customized response
+        // to convert multipartFile to File
+        File file = this.convertToFile(multipartFile, fileName);
+        // to get uploaded file link
+        String TEMP_URL = this.uploadFile(file, fileName);
+        multipartFile.getInputStream().close();
+        file.delete();
+        return TEMP_URL;                    // Your customized response
     }
 
     @Override
@@ -70,7 +78,6 @@ public class FileService implements IFileService {
             }
         }
         BlobInfo blobInfo = blobInfoBuilder.build();
-
         storage.create(blobInfo, fileBytes);
         return String.format("https://firebasestorage.googleapis.com/v0/b/upload-file-2ac29.appspot.com/o/%s?alt=media", URLEncoder.encode(fileName, StandardCharsets.UTF_8));
     }
@@ -80,6 +87,7 @@ public class FileService implements IFileService {
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(multipartFile.getBytes());
         }
+
         return tempFile;
     }
 
