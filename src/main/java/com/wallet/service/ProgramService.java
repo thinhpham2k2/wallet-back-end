@@ -116,12 +116,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public String getProgramTokenByPartnerCode(String code) {
-        Optional<Program> program = programRepository.getProgramToken(true, code);
-        if(program.isPresent()) {
-            return program.get().getToken();
-        }
-        else {
-            return null;
-        }
+        Optional<Program> program = programRepository.getProgramToken(true, code).stream().findFirst();
+        return program.map(Program::getToken).orElse(null);
     }
 }

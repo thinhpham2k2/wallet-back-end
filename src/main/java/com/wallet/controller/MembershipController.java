@@ -96,7 +96,7 @@ public class MembershipController {
         if (jwt != null) {
             CustomerMembershipDTO result = membershipService.createMembership(jwt, customerId);
             if (result != null) {
-                return ResponseEntity.status(HttpStatus.OK).body(result);
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership detail !");
         }
