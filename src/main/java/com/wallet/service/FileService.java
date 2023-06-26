@@ -6,6 +6,7 @@ import com.google.cloud.storage.*;
 import com.wallet.service.interfaces.IFileService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -31,11 +36,13 @@ public class FileService implements IFileService {
     public String upload(MultipartFile multipartFile) throws IOException {
         String fileName = multipartFile.getOriginalFilename();                        // to get original file name
         fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));  // to generated random string values for file name.
-        File file = this.convertToFile(multipartFile, fileName);
         // to convert multipartFile to File
-        String TEMP_URL = this.uploadFile(file, fileName);                                   // to get uploaded file link
-        file.deleteOnExit();                                                                // to delete the copy of uploaded file stored in the project folder
-        return TEMP_URL;                     // Your customized response
+        File file = this.convertToFile(multipartFile, fileName);
+        // to get uploaded file link
+        String TEMP_URL = this.uploadFile(file, fileName);
+        multipartFile.getInputStream().close();
+        file.delete();
+        return TEMP_URL;                    // Your customized response
     }
 
     @Override
@@ -44,21 +51,23 @@ public class FileService implements IFileService {
         String destFilePath = "Z:\\New folder\\" + destFileName;                                    // to set destination file path
 
         ////////////////////////////////   Download  ////////////////////////////////////////////////////////////////////////
-        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-config.json").getInputStream());
+        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("upload-file-2ac29-firebase-adminsdk-fnnc1-373b1b1f35.json").getInputStream());
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        Blob blob = storage.get(BlobId.of("upload-file-2ac29.appspot.com", fileName));
+        Blob blob = storage.get(BlobId.of("your bucket name", fileName));
         blob.downloadTo(Paths.get(destFilePath));
         return "Successfully Downloaded!";
     }
 
     private String uploadFile(File file, String fileName) throws IOException {
         BlobId blobId = BlobId.of("upload-file-2ac29.appspot.com", fileName);
-        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("UploadFileConfig/upload-file-2ac29-firebase-adminsdk-config.json").getInputStream());
+        Credentials credentials = GoogleCredentials.fromStream(new ClassPathResource("upload-file-2ac29-firebase-adminsdk-fnnc1-373b1b1f35.json").getInputStream());
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
         byte[] fileBytes = IOUtils.toByteArray(new FileInputStream(file));
+
         // Xác định kiểu MIME của tệp tin
         Path filePath = Paths.get(file.getAbsolutePath());
         String mimeType = Files.probeContentType(filePath);
+
         // Kiểm tra kiểu MIME của tệp tin và cấu hình đúng loại tệp cho blob trên Firebase
         BlobInfo.Builder blobInfoBuilder = BlobInfo.newBuilder(blobId);
         if (mimeType != null) {
@@ -69,7 +78,6 @@ public class FileService implements IFileService {
             }
         }
         BlobInfo blobInfo = blobInfoBuilder.build();
-
         storage.create(blobInfo, fileBytes);
         return String.format("https://firebasestorage.googleapis.com/v0/b/upload-file-2ac29.appspot.com/o/%s?alt=media", URLEncoder.encode(fileName, StandardCharsets.UTF_8));
     }
@@ -80,6 +88,7 @@ public class FileService implements IFileService {
             fos.write(multipartFile.getBytes());
             fos.close();
         }
+
         return tempFile;
     }
 
