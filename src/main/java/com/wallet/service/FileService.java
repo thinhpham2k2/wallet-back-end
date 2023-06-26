@@ -86,6 +86,7 @@ public class FileService implements IFileService {
         File tempFile = new File(fileName);
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(multipartFile.getBytes());
+            fos.close();
         }
 
         return tempFile;
