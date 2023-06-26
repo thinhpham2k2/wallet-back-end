@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -105,9 +104,9 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found google token !");
     }
 
-    @PostMapping(value = "/google/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping("/google/register")
     @Operation(summary = "Create account partner for the first time login with Google")
-    public ResponseEntity<?> createPartnerByGoogle(@ModelAttribute PartnerRegisterDTO partnerDTO) throws MethodArgumentTypeMismatchException {
+    public ResponseEntity<?> createPartnerByGoogle(@RequestBody PartnerRegisterDTO partnerDTO) throws MethodArgumentTypeMismatchException {
         if (partnerDTO != null) {
             JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 17280000000L);
             if (jwtResponseDTO.getPartnerDTO() != null) {

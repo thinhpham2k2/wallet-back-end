@@ -131,17 +131,6 @@ public class PartnerService implements IPartnerService {
             partnerErrorDTO.setPassword("The password must be 8 characters or more !");
         }
 
-        //Validate Image
-        String linkImg = "";
-        if (!flag) {
-            try {
-                linkImg = fileService.upload(partnerRegisterDTO.getImage());
-            } catch (Exception e) {
-                partnerErrorDTO.setImage("Invalid image file !");
-                throw new PartnerException(partnerErrorDTO, null);
-            }
-        }
-
         if (flag) {
             throw new PartnerException(partnerErrorDTO, null);
         } else {
@@ -150,7 +139,7 @@ public class PartnerService implements IPartnerService {
             partner.setId(null);
             partner.setState(true);
             partner.setStatus(true);
-            partner.setImage(linkImg);
+            partner.setImage("");
             partner.setPassword(passwordEncoder.encode(partnerRegisterDTO.getPassword()));
             PartnerDTO partnerRegister = PartnerMapper.INSTANCE.toDTO(partnerRepository.save(partner));
             return new JwtResponseDTO(jwtTokenProvider.generateToken((CustomUserDetails) customUserDetailsService.loadUserByPartner(partnerRegister), jwtExpiration), partnerRegister, null);
