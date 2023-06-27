@@ -8,15 +8,13 @@ import org.springframework.data.domain.Page;
 
 public interface IAdminService {
 
-    AdminDTO getByUsernameAndStatus(String userName, boolean status);
+    AdminDTO getByUsernameAndStatus(String token);
 
     AdminDTO getByIdAndStatus(Long id, boolean status);
 
     AdminDTO updateAdmin(AdminUpdateDTO adminDTO, Long id);
 
     AdminDTO deleteAdmin(Long id);
-
-    Page<AdminDTO> getAllAdmin(boolean status, Integer page);
 
     Page<AdminDTO> getAdminList(boolean status, String search, String sort, int page, int limit);
 

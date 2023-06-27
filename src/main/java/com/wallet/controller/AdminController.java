@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,8 @@ public class AdminController {
     public static final String ADMIN = "ROLE_Admin";
 
     private final IAdminService adminService;
+
+    private final IJwtService jwtService;
 
     private final IPartnerService partnerService;
 
@@ -174,6 +177,22 @@ public class AdminController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found partner list !");
         }
+    }
+
+    @GetMapping("/admins/profile")
+    @Secured({ADMIN})
+    @Operation(summary = "Get admin profile")
+    public ResponseEntity<?> getPartnerByUserName(HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            AdminDTO admin = adminService.getByUsernameAndStatus(jwt);
+            if (admin != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(admin);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found admin profile !");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 
     @GetMapping("/admins/{id}")

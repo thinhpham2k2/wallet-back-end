@@ -326,8 +326,7 @@ public class RequestService implements IRequestService {
         if (!walletList.isEmpty()) {
             return transactionRepository.findAllRequestByWalletId(true, walletList.stream().map(Wallet::getId).collect(Collectors.toList()))
                     .stream().map(RequestExtraMapper.INSTANCE::toDTO).sorted(Comparator.comparingLong(RequestExtraDTO::getId).reversed()).toList();
-        }
-        else {
+        } else {
             throw new InvalidParameterException("Not found request list");
         }
     }

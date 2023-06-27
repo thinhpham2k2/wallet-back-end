@@ -17,6 +17,7 @@ import com.wallet.repository.PartnerRepository;
 import com.wallet.service.interfaces.IAdminService;
 import com.wallet.service.interfaces.IFileService;
 import com.wallet.service.interfaces.IPagingService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -51,21 +52,22 @@ public class AdminService implements IAdminService {
     private final IFileService fileService;
 
     @Override
-    public AdminDTO getByUsernameAndStatus(String userName, boolean status) {
-        return AdminMapper.INSTANCE.toDTO(adminRepository.findAdminByUserNameAndStatus(userName, status).get());
+    public AdminDTO getByUsernameAndStatus(String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Admin> admin = adminRepository.findAdminByUserNameAndStatus(userName, true);
+        return admin.map(AdminMapper.INSTANCE::toDTO).orElse(null);
     }
 
     @Override
     public AdminDTO getByIdAndStatus(Long id, boolean status) {
         Optional<Admin> admin = adminRepository.findAdminByIdAndStatus(id, status);
         return admin.map(AdminMapper.INSTANCE::toDTO).orElse(null);
-    }
-
-    @Override
-    public Page<AdminDTO> getAllAdmin(boolean status, Integer page) {
-        Pageable pageable = PageRequest.of(page == null ? 0 : page, 10).withSort(Sort.by("userName"));
-        Page<Admin> pageResult = adminRepository.findAdminsByStatus(status, pageable);
-        return new PageImpl<>(pageResult.getContent().stream().map(AdminMapper.INSTANCE::toDTO).collect(Collectors.toList()), pageResult.getPageable(), pageResult.getTotalElements());
     }
 
     @Override
