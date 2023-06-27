@@ -20,6 +20,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.security.InvalidParameterException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -116,7 +117,7 @@ public class ProgramService implements IProgramService {
 
     @Override
     public String getProgramTokenByPartnerCode(String code) {
-        Optional<Program> program = programRepository.getProgramToken(true, code).stream().findFirst();
+        Optional<Program> program = programRepository.getProgramToken(true, code, LocalDate.now()).stream().findFirst();
         return program.map(Program::getToken).orElse(null);
     }
 }

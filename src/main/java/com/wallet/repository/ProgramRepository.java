@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,9 +30,10 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
     @Query("SELECT p FROM Program p " +
             "WHERE p.status = ?1 " +
             "AND p.partner.code = ?2 " +
+            "AND p.dateUpdated >= ?3 " +
             "ORDER BY p.id DESC " +
             "FETCH FIRST 1 ROW ONLY")
-    Optional<Program> getProgramToken(boolean status, String code);
+    Optional<Program> getProgramToken(boolean status, String code, LocalDate now);
 
     Boolean existsProgramByStatusAndToken(boolean status, String token);
 
