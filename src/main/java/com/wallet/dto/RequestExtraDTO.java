@@ -1,19 +1,19 @@
 package com.wallet.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
+@Getter
+@Setter
 @AllArgsConstructor
-public class TransactionDTO implements Serializable {
+@NoArgsConstructor
+public class RequestExtraDTO {
 
     private Long id;
     private BigDecimal amount;
@@ -22,10 +22,9 @@ public class TransactionDTO implements Serializable {
     private String description;
     private Boolean state;
     private Boolean status;
+    private Long partnerId;
+    private String partnerName;
     private Long typeId;
     private String type;
-    private Long walletId;
-    private String wallet;
-    private Long requestId;
-
+    private List<TransactionDTO> transactionList;
 }

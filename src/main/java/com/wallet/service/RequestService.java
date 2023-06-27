@@ -3,6 +3,7 @@ package com.wallet.service;
 import com.wallet.dto.*;
 import com.wallet.entity.*;
 import com.wallet.jwt.JwtTokenProvider;
+import com.wallet.mapper.RequestExtraMapper;
 import com.wallet.mapper.RequestMapper;
 import com.wallet.repository.*;
 import com.wallet.service.interfaces.IFirebaseMessagingService;
@@ -316,6 +317,18 @@ public class RequestService implements IRequestService {
             }
         } else {
             throw new InvalidParameterException("Invalid partner information");
+        }
+    }
+
+    @Override
+    public List<RequestExtraDTO> getRequestsByWalletList(String token, String customerId) {
+        List<Wallet> walletList = walletRepository.findAllByProgramTokenAndCustomerId(true, customerId, token);
+        if (!walletList.isEmpty()) {
+            return transactionRepository.findAllRequestByWalletId(true, walletList.stream().map(Wallet::getId).collect(Collectors.toList()))
+                    .stream().map(RequestExtraMapper.INSTANCE::toDTO).sorted(Comparator.comparingLong(RequestExtraDTO::getId).reversed()).toList();
+        }
+        else {
+            throw new InvalidParameterException("Not found request list");
         }
     }
 }

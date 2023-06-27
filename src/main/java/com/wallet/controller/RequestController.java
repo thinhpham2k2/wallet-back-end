@@ -2,6 +2,7 @@ package com.wallet.controller;
 
 import com.wallet.dto.RequestAdditionDTO;
 import com.wallet.dto.RequestCreationDTO;
+import com.wallet.dto.RequestExtraDTO;
 import com.wallet.dto.RequestSubtractionDTO;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IRequestService;
@@ -13,11 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -75,6 +75,21 @@ public class RequestController {
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid request !");
             }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @GetMapping("")
+    @Secured({PARTNER})
+    @Operation(summary = "Get request list by customer Id")
+    public ResponseEntity<?> findAllByProgramTokenAndCustomerId(@RequestParam(defaultValue = "") String customerId, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            List<RequestExtraDTO> result = requestService.getRequestsByWalletList(jwt, customerId);
+            if (!result.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found request list !");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }

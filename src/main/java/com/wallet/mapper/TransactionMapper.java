@@ -18,6 +18,7 @@ public interface TransactionMapper {
     @Mapping(target = "typeId", source = "type.id")
     @Mapping(target = "type", source = "type.type")
     @Mapping(target = "walletId", source = "wallet.id")
+    @Mapping(target = "wallet", source = "wallet.type.type")
     @Mapping(target = "requestId", source = "request.id")
     TransactionDTO toDTO(Transaction entity);
 

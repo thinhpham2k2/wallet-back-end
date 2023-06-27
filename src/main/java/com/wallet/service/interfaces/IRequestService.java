@@ -1,9 +1,8 @@
 package com.wallet.service.interfaces;
 
-import com.wallet.dto.RequestAdditionDTO;
-import com.wallet.dto.RequestCreationDTO;
-import com.wallet.dto.RequestDTO;
-import com.wallet.dto.RequestSubtractionDTO;
+import com.wallet.dto.*;
+
+import java.util.List;
 
 public interface IRequestService {
 
@@ -12,4 +11,6 @@ public interface IRequestService {
     RequestDTO createRequestAddition(RequestAdditionDTO addition, String token);
 
     RequestDTO createRequest(RequestCreationDTO creation, String token);
+
+    List<RequestExtraDTO> getRequestsByWalletList(String token, String customerId);
 }
