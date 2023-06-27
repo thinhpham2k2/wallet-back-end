@@ -36,7 +36,7 @@ public class PartnerController {
     @GetMapping("/profile")
     @Secured({PARTNER})
     @Operation(summary = "Get partner profile")
-    public ResponseEntity<?> getPartnerById(HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+    public ResponseEntity<?> getPartnerByUserName(HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             PartnerDTO partner = partnerService.getPartnerProfile(jwt);
