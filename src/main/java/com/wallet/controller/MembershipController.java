@@ -68,7 +68,7 @@ public class MembershipController {
             if (result != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(result);
             }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership inform !");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found membership information !");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
