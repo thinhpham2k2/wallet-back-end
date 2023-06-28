@@ -1,6 +1,7 @@
 package com.wallet.controller;
 
 import com.wallet.dto.LoginFormDTO;
+import com.wallet.dto.ProgramCreationDTO;
 import com.wallet.dto.ProgramDTO;
 import com.wallet.dto.ProgramExtraDTO;
 import com.wallet.entity.CustomUserDetails;
@@ -104,5 +105,21 @@ public class ProgramController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user name or password");
         }
+    }
+
+    @PostMapping("")
+    @Secured({PARTNER})
+    @Operation(summary = "Create program for partner")
+    public ResponseEntity<?> createProgram(@RequestBody ProgramCreationDTO creation, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        ProgramExtraDTO program = programService.createProgram(creation, jwt);
+        if (jwt != null) {
+            if (program != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(program);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found program detail !");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 }

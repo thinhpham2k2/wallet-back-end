@@ -1,5 +1,6 @@
 package com.wallet.service;
 
+import com.wallet.dto.ProgramCreationDTO;
 import com.wallet.dto.ProgramDTO;
 import com.wallet.dto.ProgramExtraDTO;
 import com.wallet.entity.Program;
@@ -119,5 +120,10 @@ public class ProgramService implements IProgramService {
     public String getProgramTokenByPartnerCode(String code) {
         Optional<Program> program = programRepository.getProgramToken(true, code, LocalDate.now()).stream().findFirst();
         return program.map(Program::getToken).orElse(null);
+    }
+
+    @Override
+    public ProgramExtraDTO createProgram(ProgramCreationDTO creation, String token) {
+        return null;
     }
 }
