@@ -133,41 +133,45 @@ public class MembershipService implements IMembershipService {
                 long countMem = program.getMembershipList().stream().filter(m -> m.getCustomer().getCustomerId().equals(customerId) && m.getStatus().equals(true)).count();
                 //Get Level
                 Optional<Level> level = program.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
-                if (countMem == 0 && level.isPresent()) {
-                    CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
+                if (countMem == 0) {
+                    if (level.isPresent()) {
+                        CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
 
-                    //Create Membership
-                    Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customer.get().getId(), null, program.getId(), program.getProgramName())));
-                    membershipEntity.getLevel().setLevel(level.get().getLevel());
-                    membershipEntity.getCustomer().setFullName(customer.get().getFullName());
-                    membershipEntity.getProgram().setProgramName(program.getProgramName());
+                        //Create Membership
+                        Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customer.get().getId(), null, program.getId(), program.getProgramName())));
+                        membershipEntity.getLevel().setLevel(level.get().getLevel());
+                        membershipEntity.getCustomer().setFullName(customer.get().getFullName());
+                        membershipEntity.getProgram().setProgramName(program.getProgramName());
 
-                    //Create Wallet
-                    Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
-                    walletEntity.getType().setType("Main wallet");
+                        //Create Wallet
+                        Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
+                        walletEntity.getType().setType("Main wallet");
 
-                    //Create Customer Membership DTO
-                    customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customer.get()));
+                        //Create Customer Membership DTO
+                        customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customer.get()));
 
-                    customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
+                        customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
 
-                    List<WalletDTO> walletList = new ArrayList<>();
-                    walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
-                    customerMember.setWalletList(walletList);
+                        List<WalletDTO> walletList = new ArrayList<>();
+                        walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
+                        customerMember.setWalletList(walletList);
 
-                    ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
-                    if (programLevel != null) {
-                        customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                        ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
+                        if (programLevel != null) {
+                            customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                        }
+
+                        List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
+                        if (!programLevelList.isEmpty()) {
+                            List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
+                            customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                        }
+                        return customerMember;
+                    } else {
+                        throw new InvalidParameterException("Has not found a valid level");
                     }
-
-                    List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
-                    if (!programLevelList.isEmpty()) {
-                        List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
-                        customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
-                    }
-                    return customerMember;
                 } else {
-                    throw new InvalidParameterException("Customer already has a membership for this program or has not found a valid level");
+                    throw new InvalidParameterException("Customer already has a membership for this program");
                 }
             } else {
                 throw new InvalidParameterException("Not found customer");
@@ -228,44 +232,48 @@ public class MembershipService implements IMembershipService {
             if (program.isPresent()) {
                 //Get Level
                 Optional<Level> level = program.get().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
-                if (count == 0 && level.isPresent()) {
-                    CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
-                    //Create Customer
-                    Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
-                    customerEntity.getPartner().setFullName(program.get().getPartner().getFullName());
+                if (count == 0) {
+                    if (level.isPresent()) {
+                        CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
+                        //Create Customer
+                        Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
+                        customerEntity.getPartner().setFullName(program.get().getPartner().getFullName());
 
-                    //Create Membership
-                    Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.get().getId(), program.get().getProgramName())));
-                    membershipEntity.getLevel().setLevel(level.get().getLevel());
-                    membershipEntity.getCustomer().setFullName(customer.getFullName());
-                    membershipEntity.getProgram().setProgramName(program.get().getProgramName());
+                        //Create Membership
+                        Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.get().getId(), program.get().getProgramName())));
+                        membershipEntity.getLevel().setLevel(level.get().getLevel());
+                        membershipEntity.getCustomer().setFullName(customer.getFullName());
+                        membershipEntity.getProgram().setProgramName(program.get().getProgramName());
 
-                    //Create Wallet
-                    Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
-                    walletEntity.getType().setType("Main wallet");
+                        //Create Wallet
+                        Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
+                        walletEntity.getType().setType("Main wallet");
 
-                    //Create Customer Membership DTO
-                    customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
+                        //Create Customer Membership DTO
+                        customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
 
-                    customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
+                        customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
 
-                    List<WalletDTO> walletList = new ArrayList<>();
-                    walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
-                    customerMember.setWalletList(walletList);
+                        List<WalletDTO> walletList = new ArrayList<>();
+                        walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
+                        customerMember.setWalletList(walletList);
 
-                    ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
-                    if (programLevel != null) {
-                        customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                        ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
+                        if (programLevel != null) {
+                            customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                        }
+
+                        List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
+                        if (!programLevelList.isEmpty()) {
+                            List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
+                            customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                        }
+                        return customerMember;
+                    } else {
+                        throw new InvalidParameterException("Has not found a valid level");
                     }
-
-                    List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
-                    if (!programLevelList.isEmpty()) {
-                        List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
-                        customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
-                    }
-                    return customerMember;
                 } else {
-                    throw new InvalidParameterException("Customer already exists or has not found a valid level");
+                    throw new InvalidParameterException("Customer already exists");
                 }
             } else {
                 throw new InvalidParameterException("Not found valid program");

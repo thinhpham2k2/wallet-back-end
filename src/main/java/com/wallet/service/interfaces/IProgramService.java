@@ -1,5 +1,6 @@
 package com.wallet.service.interfaces;
 
+import com.wallet.dto.ProgramCreationDTO;
 import com.wallet.dto.ProgramDTO;
 import com.wallet.dto.ProgramExtraDTO;
 import org.springframework.data.domain.Page;
@@ -15,4 +16,6 @@ public interface IProgramService {
     ProgramExtraDTO getProgramById(String token, long id, boolean isAdmin);
 
     String getProgramTokenByPartnerCode(String code);
+
+    ProgramExtraDTO createProgram(ProgramCreationDTO creation, String token);
 }

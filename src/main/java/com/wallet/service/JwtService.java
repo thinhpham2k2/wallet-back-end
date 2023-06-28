@@ -66,15 +66,14 @@ public class JwtService implements IJwtService {
         return refreshToken;
     }
 
-
     @Override
     public JwtResponseDTO getJwtFromEmail(String email, Long jwtExpiration) {
         String jwt;
-            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
-            CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByEmail(email);
-            jwt = jwtTokenProvider.generateToken(userDetails, jwtExpiration);
-            JwtResponseDTO jwtResponseDTO = validJwtResponse(jwt, userDetails);
-            return Objects.requireNonNullElseGet(jwtResponseDTO, () -> new JwtResponseDTO(null, new PartnerDTO(null, null, null, null, email, null, null, null, true, true), null));
+        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByEmail(email);
+        jwt = jwtTokenProvider.generateToken(userDetails, jwtExpiration);
+        JwtResponseDTO jwtResponseDTO = validJwtResponse(jwt, userDetails);
+        return Objects.requireNonNullElseGet(jwtResponseDTO, () -> new JwtResponseDTO(null, new PartnerDTO(null, null, null, null, email, null, null, null, true, true), null));
     }
 
     @Override
