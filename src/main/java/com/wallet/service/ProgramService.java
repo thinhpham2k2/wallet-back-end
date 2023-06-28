@@ -1,9 +1,6 @@
 package com.wallet.service;
 
-import com.wallet.dto.LevelCreationDTO;
-import com.wallet.dto.ProgramCreationDTO;
-import com.wallet.dto.ProgramDTO;
-import com.wallet.dto.ProgramExtraDTO;
+import com.wallet.dto.*;
 import com.wallet.entity.*;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.LevelMapper;
@@ -143,6 +140,10 @@ public class ProgramService implements IProgramService {
                                 Set<BigDecimal> conditionSet = new HashSet<>(conditionList);
                                 if (conditionList.size() == conditionSet.size()) {
                                     if (conditionList.stream().filter(c -> c.compareTo(BigDecimal.ZERO) == 0).toList().size() == 1) {
+                                        //Create ProgramExtraDTO
+                                        ProgramExtraDTO programExtra = new ProgramExtraDTO();
+                                        programExtra.setNumOfMembers(0);
+                                        programExtra.setPartner(PartnerMapper.INSTANCE.toDTO(partner.get()));
 
                                         //Create token
                                         String jwt;
@@ -150,15 +151,29 @@ public class ProgramService implements IProgramService {
                                         CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(partner.get().getUserName());
                                         jwt = jwtTokenProvider.generateToken(userDetails, 604800000L * creation.getNumberOfWeek());
 
-                                        //Create program
-                                        Program program = programRepository.save(new Program(null, creation.getProgramName(), creation.getDescription(), jwt, LocalDate.now(), LocalDate.now().plusWeeks(creation.getNumberOfWeek()), true, true, partner.get(), null, null));
+                                        List<Program> programList = programRepository.findAllByStatusAndStateAndDateUpdatedBeforeAndPartnerId(true, true, LocalDate.now(), partner.get().getId());
+                                        if(!programList.isEmpty()) {
+                                            for (Program program:programList) {
+                                                program.setState(false);
+                                                programRepository.save(program);
+                                            }
+                                        }
 
+                                        //Create program
+                                        Program program = programRepository.save(new Program(null, creation.getProgramName(), creation.getDescription(), jwt, LocalDate.now(), LocalDate.now().plusWeeks(creation.getNumberOfWeek()), !programRepository.existsProgramByStatusAndState(true, true), true, partner.get(), null, null));
+                                        programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(program));
+
+                                        List<LevelDTO> levelDTOS = new ArrayList<>();
                                         for (LevelCreationDTO levelDTO : creation.getLevelList()) {
                                             //Create Level
                                             Level level = levelRepository.save(new Level(null, levelDTO.getLevel(), levelDTO.getCondition(), levelDTO.getDescription(), true, null, null));
                                             //Create program level
                                             programLevelRepository.save(new ProgramLevel(null, levelDTO.getDescription(), true, true, level, program));
+                                            levelDTOS.add(LevelMapper.INSTANCE.toDTO(level));
                                         }
+                                        programExtra.setLevelList(levelDTOS);
+
+                                        return programExtra;
                                     } else {
                                         throw new InvalidParameterException("Each program must have only one level condition equal to 0");
                                     }
@@ -175,7 +190,7 @@ public class ProgramService implements IProgramService {
                         throw new InvalidParameterException("The program must have at least one level");
                     }
                 } else {
-                    throw new InvalidParameterException("The duration of the program must last more than one week");
+                    throw new InvalidParameterException("The duration of the program must last at least one week");
                 }
             } else {
                 throw new InvalidParameterException("The program name cannot be empty");
@@ -183,7 +198,6 @@ public class ProgramService implements IProgramService {
         } else {
             throw new InvalidParameterException("Invalid partner");
         }
-        return null;
     }
 
     private boolean checkLevel(List<String> levels) {

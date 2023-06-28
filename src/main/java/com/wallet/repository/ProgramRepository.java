@@ -27,6 +27,8 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
             "OR p.description LIKE %?3%)")
     Page<Program> getProgramListForPartner(boolean status, String userName, String search, Pageable pageable);
 
+    List<Program> findAllByStatusAndStateAndDateUpdatedBeforeAndPartnerId(boolean status, boolean state, LocalDate date, long partnerId);
+
     @Query("SELECT p FROM Program p " +
             "WHERE p.status = ?1 " +
             "AND p.state = ?1" +
@@ -37,6 +39,8 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
     Optional<Program> getProgramToken(boolean status, String code, LocalDate now);
 
     Boolean existsProgramByStatusAndStateAndToken(boolean status, boolean state, String token);
+
+    Boolean existsProgramByStatusAndState(boolean status, boolean state);
 
     Optional<Program> getProgramByStatusAndId(boolean status, long programId);
 
