@@ -17,14 +17,16 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
             "AND (:#{#partnerId.size()} = 0 OR p.partner.id IN ?2) " +
             "AND (p.partner.fullName LIKE %?3% " +
             "OR p.programName LIKE %?3% " +
-            "OR p.description LIKE %?3%)")
+            "OR p.description LIKE %?3%)" +
+            "ORDER BY p.state DESC, p.id DESC ")
     Page<Program> getProgramList(boolean status, List<Long> partnerId, String search, Pageable pageable);
 
     @Query("SELECT p FROM Program p " +
             "WHERE p.status = ?1 " +
             "AND p.partner.userName = ?2 " +
             "AND (p.programName LIKE %?3% " +
-            "OR p.description LIKE %?3%)")
+            "OR p.description LIKE %?3%) " +
+            "ORDER BY p.state DESC, p.id DESC ")
     Page<Program> getProgramListForPartner(boolean status, String userName, String search, Pageable pageable);
 
     List<Program> findAllByStatusAndStateAndDateUpdatedBeforeAndPartnerId(boolean status, boolean state, LocalDate date, long partnerId);
