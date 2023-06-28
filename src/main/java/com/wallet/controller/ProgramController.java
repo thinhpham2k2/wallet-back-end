@@ -94,7 +94,7 @@ public class ProgramController {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginFormDTO.getUserName(), loginFormDTO.getPassword()));
             CustomUserDetails partner = (CustomUserDetails) authentication.getPrincipal();
             if (partner.getPartner() != null) {
-                String token = programService.getProgramTokenByPartnerCode(partner.getPartner().getCode());
+                String token = programService.getProgramTokenActiveByPartnerCode(partner.getPartner().getCode());
                 if (token != null) {
                     return ResponseEntity.status(HttpStatus.OK).body(token);
                 } else {

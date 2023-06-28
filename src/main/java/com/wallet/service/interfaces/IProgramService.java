@@ -15,7 +15,7 @@ public interface IProgramService {
 
     ProgramExtraDTO getProgramById(String token, long id, boolean isAdmin);
 
-    String getProgramTokenByPartnerCode(String code);
+    String getProgramTokenActiveByPartnerCode(String code);
 
     ProgramExtraDTO createProgram(ProgramCreationDTO creation, String token);
 }

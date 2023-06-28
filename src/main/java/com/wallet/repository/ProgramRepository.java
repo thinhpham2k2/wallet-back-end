@@ -29,13 +29,14 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
 
     @Query("SELECT p FROM Program p " +
             "WHERE p.status = ?1 " +
+            "AND p.state = ?1" +
             "AND p.partner.code = ?2 " +
             "AND p.dateUpdated >= ?3 " +
             "ORDER BY p.id DESC " +
             "FETCH FIRST 1 ROW ONLY")
     Optional<Program> getProgramToken(boolean status, String code, LocalDate now);
 
-    Boolean existsProgramByStatusAndToken(boolean status, String token);
+    Boolean existsProgramByStatusAndStateAndToken(boolean status, boolean state, String token);
 
     Optional<Program> getProgramByStatusAndId(boolean status, long programId);
 
