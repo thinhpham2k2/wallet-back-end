@@ -3,6 +3,7 @@ package com.wallet.service;
 import com.wallet.dto.ProgramCreationDTO;
 import com.wallet.dto.ProgramDTO;
 import com.wallet.dto.ProgramExtraDTO;
+import com.wallet.entity.Partner;
 import com.wallet.entity.Program;
 import com.wallet.entity.ProgramLevel;
 import com.wallet.jwt.JwtTokenProvider;
@@ -10,6 +11,7 @@ import com.wallet.mapper.LevelMapper;
 import com.wallet.mapper.PartnerMapper;
 import com.wallet.mapper.ProgramMapper;
 import com.wallet.repository.MembershipRepository;
+import com.wallet.repository.PartnerRepository;
 import com.wallet.repository.ProgramLevelRepository;
 import com.wallet.repository.ProgramRepository;
 import com.wallet.service.interfaces.IPagingService;
@@ -36,6 +38,8 @@ public class ProgramService implements IProgramService {
     private final ProgramRepository programRepository;
 
     private final ProgramLevelRepository programLevelRepository;
+
+    private final PartnerRepository partnerRepository;
 
     private final MembershipRepository membershipRepository;
 
@@ -124,6 +128,19 @@ public class ProgramService implements IProgramService {
 
     @Override
     public ProgramExtraDTO createProgram(ProgramCreationDTO creation, String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Expired JWT token");
+        }
+        Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
+        if(partner.isPresent()) {
+
+        } else {
+            throw new InvalidParameterException("Invalid partner");
+        }
         return null;
     }
 }

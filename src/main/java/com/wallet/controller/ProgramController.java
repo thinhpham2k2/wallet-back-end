@@ -117,7 +117,7 @@ public class ProgramController {
             if (program != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(program);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found program detail !");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create program fails !");
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
