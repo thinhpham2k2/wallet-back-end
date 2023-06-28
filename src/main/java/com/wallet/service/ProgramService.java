@@ -84,7 +84,7 @@ public class ProgramService implements IProgramService {
             programExtra.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, id));
             programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(program.get()));
             programExtra.setPartner(PartnerMapper.INSTANCE.toDTO(program.get().getPartner()));
-            programExtra.setLevelList(programLevelRepository.getProgramLevelByStatusAndProgramId(true, id).stream().map(ProgramLevel::getLevel).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            programExtra.setLevelList(programLevelRepository.getProgramLevelByStatusAndProgramId(true, id).stream().map(ProgramLevel::getLevel).map(LevelMapper.INSTANCE::toDTO).filter(l -> l.getStatus().equals(true)).collect(Collectors.toList()));
             return programExtra;
         }
         return null;
@@ -121,6 +121,128 @@ public class ProgramService implements IProgramService {
     }
 
     @Override
+    public ProgramExtraDTO updateProgram(ProgramUpdateDTO update, String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Expired JWT token");
+        }
+        Optional<Program> program = programRepository.getProgramByStatusAndId(true, update.getId(), userName);
+        if (program.isPresent()) {
+            if (!update.getProgramName().isBlank()) {
+                if (!update.getLevelList().isEmpty()) {
+                    if (checkLevel(update.getLevelList().stream().map(LevelUpdateDTO::getLevel).toList())) {
+                        List<Long> idList = update.getLevelList().stream().map(LevelUpdateDTO::getId).filter(Objects::nonNull).toList();
+                        Set<Long> ids = program.get().getProgramLevelList().stream().filter(p -> p.getStatus().equals(true)).map(ProgramLevel::getLevel).filter(l -> l.getStatus().equals(true)).map(Level::getId).collect(Collectors.toSet());
+                        if (ids.containsAll(idList)) {
+                            Set<Long> idSet = new HashSet<>(idList);
+                            if (idList.size() == idSet.size()) {
+                                List<BigDecimal> conditionList = update.getLevelList().stream().map(LevelUpdateDTO::getCondition).toList();
+                                if (conditionList.stream().filter(c -> c.compareTo(BigDecimal.ZERO) < 0).toList().size() == 0) {
+                                    Set<BigDecimal> conditionSet = new HashSet<>(conditionList);
+                                    if (conditionList.size() == conditionSet.size()) {
+                                        if (conditionList.stream().filter(c -> c.compareTo(BigDecimal.ZERO) == 0).toList().size() == 1) {
+                                            //Create ProgramExtraDTO
+                                            ProgramExtraDTO programExtra = new ProgramExtraDTO();
+                                            programExtra.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, program.get().getId()));
+                                            programExtra.setPartner(PartnerMapper.INSTANCE.toDTO(program.get().getPartner()));
+
+                                            List<Program> programList = programRepository.findAllByStatusAndStateAndDateUpdatedBeforeAndPartnerId(true, true, LocalDate.now(), program.get().getPartner().getId());
+                                            if (!programList.isEmpty()) {
+                                                for (Program programPast : programList) {
+                                                    programPast.setState(false);
+                                                    programRepository.save(programPast);
+                                                }
+                                            }
+
+                                            //Update program
+                                            program.get().setProgramName(update.getProgramName());
+                                            program.get().setDescription(update.getDescription());
+                                            Program newProgram = programRepository.save(program.get());
+                                            programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(newProgram));
+
+                                            List<LevelDTO> levelDTOS = new ArrayList<>();
+                                            for (LevelUpdateDTO levelDTO : update.getLevelList()) {
+                                                if (levelDTO.getId() != null) {
+                                                    Optional<Level> level = levelRepository.findLevelByStatusAndId(true, levelDTO.getId());
+                                                    if (level.isPresent()) {
+                                                        //Update Level
+                                                        level.get().setLevel(levelDTO.getLevel());
+                                                        level.get().setCondition(levelDTO.getCondition());
+                                                        level.get().setDescription(levelDTO.getDescription());
+                                                        level.get().setStatus(levelDTO.getStatus());
+                                                        Level newLevel = levelRepository.save(level.get());
+                                                        //Update program level
+                                                        Optional<ProgramLevel> programLevel = programLevelRepository.findFirstByLevelId(newLevel.getId());
+                                                        if (programLevel.isPresent()) {
+                                                            programLevel.get().setStatus(levelDTO.getStatus());
+                                                            programLevel.get().setDescription(levelDTO.getDescription());
+                                                            programLevelRepository.save(programLevel.get());
+                                                            if (newLevel.getStatus().equals(true)) {
+                                                                levelDTOS.add(LevelMapper.INSTANCE.toDTO(newLevel));
+                                                            }
+                                                        } else {
+                                                            throw new InvalidParameterException("Not found level");
+                                                        }
+                                                    } else {
+                                                        throw new InvalidParameterException("Not found level");
+                                                    }
+                                                } else {
+                                                    //Create Level
+                                                    Level level = levelRepository.save(new Level(null, levelDTO.getLevel(), levelDTO.getCondition(), levelDTO.getDescription(), true, null, null));
+                                                    //Create program level
+                                                    programLevelRepository.save(new ProgramLevel(null, levelDTO.getDescription(), true, true, level, program.get()));
+                                                    levelDTOS.add(LevelMapper.INSTANCE.toDTO(level));
+                                                }
+                                            }
+                                            ids.removeAll(idSet);
+                                            for (Long id : ids) {
+                                                Optional<Level> level = levelRepository.findLevelByStatusAndId(true, id);
+                                                if (level.isPresent()) {
+                                                    level.get().setStatus(false);
+                                                    Level newLevel = levelRepository.save(level.get());
+                                                    Optional<ProgramLevel> programLevel = programLevelRepository.findFirstByLevelId(id);
+                                                    if (programLevel.isPresent()) {
+                                                        programLevel.get().setStatus(false);
+                                                        programLevelRepository.save(programLevel.get());
+                                                    }
+                                                }
+                                            }
+                                            programExtra.setLevelList(levelDTOS);
+
+                                            return programExtra;
+                                        } else {
+                                            throw new InvalidParameterException("Each program must have only one level condition equal to 0");
+                                        }
+                                    } else {
+                                        throw new InvalidParameterException("The level list contains levels that duplicate the conditions");
+                                    }
+                                } else {
+                                    throw new InvalidParameterException("The level condition cannot be negative");
+                                }
+                            } else {
+                                throw new InvalidParameterException("Duplicate level id");
+                            }
+                        } else {
+                            throw new InvalidParameterException("Invalid level");
+                        }
+                    } else {
+                        throw new InvalidParameterException("The level cannot be empty");
+                    }
+                } else {
+                    throw new InvalidParameterException("The program must have at least one level");
+                }
+            } else {
+                throw new InvalidParameterException("The program name cannot be empty");
+            }
+        } else {
+            throw new InvalidParameterException("Not found program");
+        }
+    }
+
+    @Override
     public ProgramExtraDTO createProgram(ProgramCreationDTO creation, String token) {
         String userName;
         try {
@@ -152,8 +274,8 @@ public class ProgramService implements IProgramService {
                                         jwt = jwtTokenProvider.generateToken(userDetails, 604800000L * creation.getNumberOfWeek());
 
                                         List<Program> programList = programRepository.findAllByStatusAndStateAndDateUpdatedBeforeAndPartnerId(true, true, LocalDate.now(), partner.get().getId());
-                                        if(!programList.isEmpty()) {
-                                            for (Program program:programList) {
+                                        if (!programList.isEmpty()) {
+                                            for (Program program : programList) {
                                                 program.setState(false);
                                                 programRepository.save(program);
                                             }

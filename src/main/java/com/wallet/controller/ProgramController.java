@@ -1,9 +1,6 @@
 package com.wallet.controller;
 
-import com.wallet.dto.LoginFormDTO;
-import com.wallet.dto.ProgramCreationDTO;
-import com.wallet.dto.ProgramDTO;
-import com.wallet.dto.ProgramExtraDTO;
+import com.wallet.dto.*;
 import com.wallet.entity.CustomUserDetails;
 import com.wallet.service.interfaces.IJwtService;
 import com.wallet.service.interfaces.IProgramService;
@@ -118,6 +115,22 @@ public class ProgramController {
                 return ResponseEntity.status(HttpStatus.OK).body(program);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create program fails !");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @PutMapping("")
+    @Secured({PARTNER})
+    @Operation(summary = "Update program for partner")
+    public ResponseEntity<?> createProgram(@RequestBody ProgramUpdateDTO update, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        ProgramExtraDTO program = programService.updateProgram(update, jwt);
+        if (jwt != null) {
+            if (program != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(program);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Update program fails !");
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");

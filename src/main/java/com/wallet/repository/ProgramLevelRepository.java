@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProgramLevelRepository extends JpaRepository<ProgramLevel, Long> {
 
@@ -28,4 +29,6 @@ public interface ProgramLevelRepository extends JpaRepository<ProgramLevel, Long
     List<ProgramLevel> getLeveListByProgramToken(boolean status, String token);
 
     List<ProgramLevel> getProgramLevelByStatusAndProgramId(boolean status, long programId);
+
+    Optional<ProgramLevel> findFirstByLevelId(long id);
 }
