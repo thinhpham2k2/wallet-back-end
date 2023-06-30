@@ -198,13 +198,16 @@ public class PartnerService implements IPartnerService {
 
             //Validate Image
             String linkImg = "";
-            if (!flag) {
-                try {
-                    linkImg = fileService.upload(partnerDTO.getImage());
-                } catch (Exception e) {
-                    System.out.println(e.toString());
-                    partnerErrorDTO.setImage("Invalid image file !");
-                    throw new PartnerException(null, partnerErrorDTO);
+            if (partnerDTO.getImage() == null) {
+                linkImg = partner.get().getImage();
+            } else {
+                if (!flag) {
+                    try {
+                        linkImg = fileService.upload(partnerDTO.getImage());
+                    } catch (Exception e) {
+                        partnerErrorDTO.setImage("Invalid image file !");
+                        throw new PartnerException(null, partnerErrorDTO);
+                    }
                 }
             }
 

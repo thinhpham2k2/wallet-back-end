@@ -5,6 +5,7 @@ import com.wallet.entity.*;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.*;
 import com.wallet.repository.*;
+import com.wallet.service.interfaces.IFileService;
 import com.wallet.service.interfaces.IMembershipService;
 import com.wallet.service.interfaces.IPagingService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -42,6 +43,8 @@ public class MembershipService implements IMembershipService {
     private final WalletTypeRepository walletTypeRepository;
 
     private final IPagingService pagingService;
+
+    private final IFileService fileService;
 
     @Override
     public Page<MembershipDTO> getMemberList(boolean status, List<Long> partnerId, List<Long> programId, String search, String sort, int page, int limit) {
@@ -182,6 +185,52 @@ public class MembershipService implements IMembershipService {
     }
 
     @Override
+    public CustomerMembershipDTO createCustomerWeb(String token, CustomerProgramWebDTO customer) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Expired JWT token");
+        }
+        Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
+        if (partner.isPresent()) {
+            if (customer.getCustomerId() != null) {
+                String linkImg = null;
+                if (customer.getImage() != null) {
+                    try {
+                        linkImg = fileService.upload(customer.getImage());
+                    } catch (Exception e) {
+                        throw new InvalidParameterException("Invalid image file !");
+                    }
+                }
+                CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), linkImg, customer.getPhone(), true, true, partner.get().getId(), null);
+                long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
+                if (count == 0) {
+                    CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
+                    //Create Customer
+                    Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
+                    customerEntity.getPartner().setFullName(partner.get().getFullName());
+
+                    //Create Customer Membership DTO
+                    customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
+                    customerMember.setMembership(null);
+                    customerMember.setWalletList(null);
+                    customerMember.setNextLevel(null);
+                    customerMember.setLevelList(null);
+                    return customerMember;
+                } else {
+                    throw new InvalidParameterException("Customer already exists");
+                }
+            } else {
+                throw new InvalidParameterException("Customer id cannot be blank");
+            }
+        } else {
+            throw new InvalidParameterException("Invalid partner");
+        }
+    }
+
+    @Override
     public CustomerMembershipDTO createCustomer(String token, CustomerProgramDTO customer) {
         String userName;
         try {
@@ -192,23 +241,107 @@ public class MembershipService implements IMembershipService {
         }
         Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
         if (partner.isPresent()) {
-            CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, partner.get().getId(), null);
-            long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
-            if (count == 0) {
-                CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
-                //Create Customer
-                Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
-                customerEntity.getPartner().setFullName(partner.get().getFullName());
+            if (customer.getCustomerId() != null) {
+                CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, partner.get().getId(), null);
+                long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
+                if (count == 0) {
+                    CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
+                    //Create Customer
+                    Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
+                    customerEntity.getPartner().setFullName(partner.get().getFullName());
 
-                //Create Customer Membership DTO
-                customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
-                customerMember.setMembership(null);
-                customerMember.setWalletList(null);
-                customerMember.setNextLevel(null);
-                customerMember.setLevelList(null);
-                return customerMember;
+                    //Create Customer Membership DTO
+                    customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
+                    customerMember.setMembership(null);
+                    customerMember.setWalletList(null);
+                    customerMember.setNextLevel(null);
+                    customerMember.setLevelList(null);
+                    return customerMember;
+                } else {
+                    throw new InvalidParameterException("Customer already exists");
+                }
             } else {
-                throw new InvalidParameterException("Customer already exists");
+                throw new InvalidParameterException("Customer id cannot be blank");
+            }
+        } else {
+            throw new InvalidParameterException("Invalid partner");
+        }
+    }
+
+    @Override
+    public CustomerMembershipDTO createCustomerMembershipWeb(String token, CustomerProgramWebDTO customer) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Expired JWT token");
+        }
+        Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
+        if (partner.isPresent()) {
+            String linkImg = null;
+            if (customer.getImage() != null) {
+                try {
+                    linkImg = fileService.upload(customer.getImage());
+                } catch (Exception e) {
+                    throw new InvalidParameterException("Invalid image file !");
+                }
+            }
+            if (customer.getCustomerId() != null) {
+                CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), linkImg, customer.getPhone(), true, true, partner.get().getId(), null);
+                long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
+                Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isBefore(LocalDate.now()) && p.getStatus().equals(true)).findFirst();
+                if (program.isPresent()) {
+                    //Get Level
+                    Optional<Level> level = program.get().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
+                    if (count == 0) {
+                        if (level.isPresent()) {
+                            CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
+                            //Create Customer
+                            Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
+                            customerEntity.getPartner().setFullName(program.get().getPartner().getFullName());
+
+                            //Create Membership
+                            Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.get().getId(), program.get().getProgramName())));
+                            membershipEntity.getLevel().setLevel(level.get().getLevel());
+                            membershipEntity.getCustomer().setFullName(customer.getFullName());
+                            membershipEntity.getProgram().setProgramName(program.get().getProgramName());
+
+                            //Create Wallet
+                            Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
+                            walletEntity.getType().setType("Main wallet");
+
+                            //Create Customer Membership DTO
+                            customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
+
+                            customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
+
+                            List<WalletDTO> walletList = new ArrayList<>();
+                            walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
+                            customerMember.setWalletList(walletList);
+
+                            ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
+                            if (programLevel != null) {
+                                customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                            }
+
+                            List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
+                            if (!programLevelList.isEmpty()) {
+                                List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
+                                customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                            }
+                            return customerMember;
+                        } else {
+                            throw new InvalidParameterException("Has not found a valid level");
+                        }
+                    } else {
+                        throw new InvalidParameterException("Customer already exists");
+                    }
+                } else {
+                    throw new InvalidParameterException("Not found valid program");
+                }
+            } else {
+                throw new InvalidParameterException("Customer id cannot be blank");
             }
         } else {
             throw new InvalidParameterException("Invalid partner");
@@ -226,57 +359,61 @@ public class MembershipService implements IMembershipService {
         }
         Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
         if (partner.isPresent()) {
-            CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, partner.get().getId(), null);
-            long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
-            Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isBefore(LocalDate.now()) && p.getStatus().equals(true)).findFirst();
-            if (program.isPresent()) {
-                //Get Level
-                Optional<Level> level = program.get().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
-                if (count == 0) {
-                    if (level.isPresent()) {
-                        CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
-                        //Create Customer
-                        Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
-                        customerEntity.getPartner().setFullName(program.get().getPartner().getFullName());
+            if (customer.getCustomerId() != null) {
+                CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, partner.get().getId(), null);
+                long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
+                Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isBefore(LocalDate.now()) && p.getStatus().equals(true)).findFirst();
+                if (program.isPresent()) {
+                    //Get Level
+                    Optional<Level> level = program.get().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
+                    if (count == 0) {
+                        if (level.isPresent()) {
+                            CustomerMembershipDTO customerMember = new CustomerMembershipDTO();
+                            //Create Customer
+                            Customer customerEntity = customerRepository.save(CustomerMapper.INSTANCE.toEntity(customerDTO));
+                            customerEntity.getPartner().setFullName(program.get().getPartner().getFullName());
 
-                        //Create Membership
-                        Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.get().getId(), program.get().getProgramName())));
-                        membershipEntity.getLevel().setLevel(level.get().getLevel());
-                        membershipEntity.getCustomer().setFullName(customer.getFullName());
-                        membershipEntity.getProgram().setProgramName(program.get().getProgramName());
+                            //Create Membership
+                            Membership membershipEntity = membershipRepository.save(MembershipMapper.INSTANCE.toEntity(new MembershipDTO(null, LocalDate.now(), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), true, true, level.get().getId(), level.get().getLevel(), customerEntity.getId(), null, program.get().getId(), program.get().getProgramName())));
+                            membershipEntity.getLevel().setLevel(level.get().getLevel());
+                            membershipEntity.getCustomer().setFullName(customer.getFullName());
+                            membershipEntity.getProgram().setProgramName(program.get().getProgramName());
 
-                        //Create Wallet
-                        Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
-                        walletEntity.getType().setType("Main wallet");
+                            //Create Wallet
+                            Wallet walletEntity = walletRepository.save(WalletMapper.INSTANCE.toEntity(new WalletDTO(null, BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), BigDecimal.valueOf(0L), LocalDate.now(), LocalDate.now(), true, true, membershipEntity.getId(), walletTypeRepository.getWalletTypeByStatusAndType(true, "Main wallet").getId(), "Main wallet")));
+                            walletEntity.getType().setType("Main wallet");
 
-                        //Create Customer Membership DTO
-                        customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
+                            //Create Customer Membership DTO
+                            customerMember.setCustomer(CustomerMapper.INSTANCE.toDTO(customerEntity));
 
-                        customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
+                            customerMember.setMembership(MembershipMapper.INSTANCE.toDTO(membershipEntity));
 
-                        List<WalletDTO> walletList = new ArrayList<>();
-                        walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
-                        customerMember.setWalletList(walletList);
+                            List<WalletDTO> walletList = new ArrayList<>();
+                            walletList.add(WalletMapper.INSTANCE.toDTO(walletEntity));
+                            customerMember.setWalletList(walletList);
 
-                        ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
-                        if (programLevel != null) {
-                            customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                            ProgramLevel programLevel = programLevelRepository.getNextLevel(true, token, BigDecimal.valueOf(0L));
+                            if (programLevel != null) {
+                                customerMember.setNextLevel(LevelMapper.INSTANCE.toDTO(programLevel.getLevel()));
+                            }
+
+                            List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
+                            if (!programLevelList.isEmpty()) {
+                                List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
+                                customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                            }
+                            return customerMember;
+                        } else {
+                            throw new InvalidParameterException("Has not found a valid level");
                         }
-
-                        List<ProgramLevel> programLevelList = programLevelRepository.getLeveListByProgramToken(true, token);
-                        if (!programLevelList.isEmpty()) {
-                            List<Level> levels = programLevelList.stream().map(ProgramLevel::getLevel).toList();
-                            customerMember.setLevelList(levels.stream().map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
-                        }
-                        return customerMember;
                     } else {
-                        throw new InvalidParameterException("Has not found a valid level");
+                        throw new InvalidParameterException("Customer already exists");
                     }
                 } else {
-                    throw new InvalidParameterException("Customer already exists");
+                    throw new InvalidParameterException("Not found valid program");
                 }
             } else {
-                throw new InvalidParameterException("Not found valid program");
+                throw new InvalidParameterException("Customer id cannot be blank");
             }
         } else {
             throw new InvalidParameterException("Invalid partner");
