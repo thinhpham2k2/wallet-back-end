@@ -49,7 +49,7 @@ public class PartnerController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/register")
     @Operation(summary = "Register a partner account")
     public ResponseEntity<?> registerPartner(@ModelAttribute PartnerRegisterDTO partnerDTO) throws MethodArgumentTypeMismatchException {
         JwtResponseDTO jwtResponseDTO = partnerService.creatPartner(partnerDTO, 17280000000L);
