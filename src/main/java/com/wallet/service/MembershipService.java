@@ -138,7 +138,7 @@ public class MembershipService implements IMembershipService {
         }
         Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
         if (partner.isPresent()) {
-            Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isBefore(LocalDate.now().plusDays(1)) && p.getStatus().equals(true) && p.getState().equals(true)).findFirst();
+            Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isAfter(LocalDate.now().minusDays(1)) && p.getStatus().equals(true) && p.getState().equals(true)).findFirst();
             if (program.isPresent()) {
                 Optional<Customer> customer = program.get().getPartner().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customerId) && p.getStatus().equals(true)).findFirst();
                 if (customer.isPresent()) {
@@ -302,7 +302,7 @@ public class MembershipService implements IMembershipService {
             if (customer.getCustomerId() != null) {
                 CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), linkImg, customer.getPhone(), true, true, partner.get().getId(), null);
                 long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
-                Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isBefore(LocalDate.now().plusDays(1)) && p.getStatus().equals(true) && p.getState().equals(true)).findFirst();
+                Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isAfter(LocalDate.now().minusDays(1)) && p.getStatus().equals(true) && p.getState().equals(true)).findFirst();
                 if (program.isPresent()) {
                     //Get Level
                     Optional<Level> level = program.get().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
@@ -374,7 +374,7 @@ public class MembershipService implements IMembershipService {
             if (customer.getCustomerId() != null) {
                 CustomerDTO customerDTO = new CustomerDTO(null, customer.getCustomerId(), customer.getFullName(), customer.getEmail(), customer.getDob(), customer.getImage(), customer.getPhone(), true, true, partner.get().getId(), null);
                 long count = partner.get().getCustomerList().stream().filter(p -> p.getCustomerId().equals(customer.getCustomerId()) && p.getStatus().equals(true)).count();
-                Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isBefore(LocalDate.now().plusDays(1)) && p.getStatus().equals(true) && p.getState().equals(true)).findFirst();
+                Optional<Program> program = partner.get().getProgramList().stream().filter(p -> p.getDateUpdated().isAfter(LocalDate.now().minusDays(1)) && p.getStatus().equals(true) && p.getState().equals(true)).findFirst();
                 if (program.isPresent()) {
                     //Get Level
                     Optional<Level> level = program.get().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getCondition().compareTo(BigDecimal.ZERO) == 0).findFirst();
