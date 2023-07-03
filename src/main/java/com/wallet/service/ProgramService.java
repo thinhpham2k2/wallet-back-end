@@ -84,7 +84,9 @@ public class ProgramService implements IProgramService {
             programExtra.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, id));
             programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(program.get()));
             programExtra.setPartner(PartnerMapper.INSTANCE.toDTO(program.get().getPartner()));
-            programExtra.setLevelList(programLevelRepository.getProgramLevelByStatusAndProgramId(true, id).stream().map(ProgramLevel::getLevel).map(LevelMapper.INSTANCE::toDTO).filter(l -> l.getStatus().equals(true)).collect(Collectors.toList()));
+            programExtra.setLevelList(programLevelRepository.getProgramLevelByStatusAndProgramId(true, id).stream()
+                    .map(ProgramLevel::getLevel).map(LevelMapper.INSTANCE::toDTO).filter(l -> l.getStatus().equals(true)).toList()
+                    .stream().sorted(Comparator.comparing(LevelDTO::getCondition)).toList());
             return programExtra;
         }
         return null;
@@ -210,7 +212,19 @@ public class ProgramService implements IProgramService {
                                                     }
                                                 }
                                             }
-                                            programExtra.setLevelList(levelDTOS);
+                                            programExtra.setLevelList(levelDTOS.stream().sorted(Comparator.comparing(LevelDTO::getCondition)).toList());
+
+                                            try {
+                                                for (Membership membership : membershipRepository.findAllByProgramIdAndStatus(programExtra.getProgram().getId(), true)) {
+                                                    Optional<LevelDTO> level = programExtra.getLevelList().stream().filter(l -> l.getCondition().compareTo(membership.getTotalExpenditure()) <= 0).max(Comparator.comparing(LevelDTO::getCondition));
+                                                    if (level.isPresent()) {
+                                                        membership.setLevel(LevelMapper.INSTANCE.toEntity(level.get()));
+                                                        membershipRepository.save(membership);
+                                                    }
+                                                }
+                                            } catch (Exception e) {
+                                                System.out.println(e.getMessage());
+                                            }
 
                                             return programExtra;
                                         } else {
