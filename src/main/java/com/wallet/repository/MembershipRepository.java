@@ -55,4 +55,6 @@ public interface MembershipRepository extends JpaRepository<Membership, Long> {
             "AND m.customer.customerId = ?2 " +
             "AND m.program.token = ?3")
     Optional<Membership> findByCustomerIdAndStatus(boolean status, String customerId, String token);
+
+    List<Membership> findAllByProgramIdAndStatus(long programId, boolean status);
 }
