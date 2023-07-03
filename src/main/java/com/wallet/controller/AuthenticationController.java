@@ -48,7 +48,7 @@ public class AuthenticationController {
         String pass = loginFormDTO.getPassword();
 
         if (userName == null || userName.isEmpty()) {
-            return ResponseEntity.badRequest().body("Missing email");
+            return ResponseEntity.badRequest().body("Missing UserName");
         }
 
         if (pass == null || pass.isEmpty()) {
