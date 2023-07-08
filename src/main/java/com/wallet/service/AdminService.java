@@ -90,11 +90,9 @@ public class AdminService implements IAdminService {
     public AdminDTO updateAdmin(AdminUpdateDTO adminDTO, Long id) {
         boolean flag = false;
         AdminErrorUpdateDTO errorUpdateDTO = new AdminErrorUpdateDTO();
-
         //Validate Id
         if (id == null) {
-            flag = true;
-            errorUpdateDTO.setId("Admin Id mustn't be blank !");
+            throw new InvalidParameterException("Admin Id mustn't be blank !");
         }
 
         //Validate Full name
@@ -130,32 +128,35 @@ public class AdminService implements IAdminService {
             flag = true;
             errorUpdateDTO.setPhone("Duplicate phone number !");
         }
+        Optional<Admin> adminOptional = adminRepository.findById(id);
 
+        if (adminOptional.isEmpty()) {
+            throw new InvalidParameterException("Invalid admin !");
+        }
         //Validate Image
         String linkImg = "";
-        if (!flag) {
-            try {
-                linkImg = fileService.upload(adminDTO.getImage());
-            } catch (Exception e) {
-                errorUpdateDTO.setImage("Invalid image file !");
-                throw new AdminException(errorUpdateDTO, null);
+        if (adminDTO.getImage() == null) {
+            linkImg = adminOptional.get().getImage();
+        } else {
+            if (!flag) {
+                try {
+                    linkImg = fileService.upload(adminDTO.getImage());
+                } catch (Exception e) {
+                    errorUpdateDTO.setImage("Invalid image file !");
+                    throw new AdminException(errorUpdateDTO, null);
+                }
             }
         }
 
         if (flag) {
             throw new AdminException(errorUpdateDTO, null);
         } else {
-            Optional<Admin> adminOptional = adminRepository.findById(id);
-            if (adminOptional.isPresent()) {
-                adminOptional.get().setFullName(adminDTO.getFullName());
-                adminOptional.get().setDob(adminDTO.getDob());
-                adminOptional.get().setImage(linkImg);
-                adminOptional.get().setPhone(adminDTO.getPhone());
-                adminOptional.get().setStatus(adminDTO.getStatus());
-                return AdminMapper.INSTANCE.toDTO(adminRepository.save(adminOptional.get()));
-            } else {
-                throw new InvalidParameterException("Invalid admin !");
-            }
+            adminOptional.get().setFullName(adminDTO.getFullName());
+            adminOptional.get().setDob(adminDTO.getDob());
+            adminOptional.get().setImage(linkImg);
+            adminOptional.get().setPhone(adminDTO.getPhone());
+            adminOptional.get().setStatus(adminDTO.getStatus());
+            return AdminMapper.INSTANCE.toDTO(adminRepository.save(adminOptional.get()));
         }
     }
 
