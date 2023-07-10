@@ -296,7 +296,7 @@ public class ProgramService implements IProgramService {
                                         }
 
                                         //Create program
-                                        Program program = programRepository.save(new Program(null, creation.getProgramName(), creation.getDescription(), jwt, LocalDate.now(), LocalDate.now().plusWeeks(creation.getNumberOfWeek()), !programRepository.existsProgramByStatusAndState(true, true), true, partner.get(), null, null));
+                                        Program program = programRepository.save(new Program(null, creation.getProgramName(), creation.getDescription(), jwt, LocalDate.now(), LocalDate.now().plusWeeks(creation.getNumberOfWeek()), !programRepository.existsProgramByStatusAndStateAndPartnerId(true, true, partner.get().getId()), true, partner.get(), null, null));
                                         programExtra.setProgram(ProgramMapper.INSTANCE.toDTO(program));
 
                                         List<LevelDTO> levelDTOS = new ArrayList<>();
