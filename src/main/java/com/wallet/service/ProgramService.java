@@ -344,4 +344,23 @@ public class ProgramService implements IProgramService {
         }
         return true;
     }
+
+    @Override
+    public ProgramDTO deleteProgram(Long programId, String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Program> program = programRepository.getProgramByStatusAndId(true, programId, userName);
+        if (program.isPresent()) {
+            program.get().setState(false);
+            program.get().setStatus(false);
+            return ProgramMapper.INSTANCE.toDTO(programRepository.save(program.get()));
+        } else {
+            throw new InvalidParameterException("Not found program !");
+        }
+    }
 }

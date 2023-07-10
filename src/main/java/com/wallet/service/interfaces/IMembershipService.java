@@ -24,4 +24,6 @@ public interface IMembershipService {
     CustomerMembershipDTO createMembership(String token, String customerId);
 
     MembershipExtraDTO getMemberById(String token, long memberId, boolean isAdmin);
+
+    MembershipExtraDTO deleteMember(String token, long memberId);
 }

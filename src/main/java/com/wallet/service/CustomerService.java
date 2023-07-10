@@ -2,6 +2,7 @@ package com.wallet.service;
 
 import com.wallet.dto.CustomerDTO;
 import com.wallet.dto.CustomerExtraDTO;
+import com.wallet.dto.CustomerUpdateDTO;
 import com.wallet.entity.Customer;
 import com.wallet.entity.Membership;
 import com.wallet.jwt.JwtTokenProvider;
@@ -105,5 +106,73 @@ public class CustomerService implements ICustomerService {
             return customerExtra;
         }
         return null;
+    }
+
+    @Override
+    public CustomerExtraDTO updateCustomer(CustomerUpdateDTO customerUpdate, long customerId, String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Customer> customer = customerRepository.findByStatusAndId(true, customerId, userName);
+
+        if (customer.isPresent()) {
+            if (customerUpdate.getFullName().isBlank()) {
+                throw new InvalidParameterException("Full name is required");
+            }
+
+            try {
+                customer.get().setDob(customerUpdate.getDob());
+            } catch (Exception e) {
+                throw new InvalidParameterException("Invalid date of birth");
+            }
+
+            customer.get().setFullName(customerUpdate.getFullName());
+            customer.get().setEmail(customerUpdate.getEmail());
+            customer.get().setImage(customerUpdate.getImage());
+            customer.get().setPhone(customerUpdate.getPhone());
+            customer.get().setState(customerUpdate.getState());
+
+            Customer customer1 = customerRepository.save(customer.get());
+            CustomerExtraDTO customerExtraDTO = new CustomerExtraDTO();
+            customerExtraDTO.setCustomer(CustomerMapper.INSTANCE.toDTO(customer1));
+            List<Membership> memberships = customer1.getMembershipList();
+            if (!memberships.isEmpty()) {
+                customerExtraDTO.setMembershipList(memberships.stream().filter(m -> m.getStatus().equals(true)).map(MembershipMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            }
+            return customerExtraDTO;
+        } else {
+            throw new InvalidParameterException("Not found customer");
+        }
+    }
+
+    @Override
+    public CustomerExtraDTO deleteCustomer(long customerId, String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Customer> customer = customerRepository.findByStatusAndId(true, customerId, userName);
+
+        if (customer.isPresent()) {
+            customer.get().setState(false);
+            customer.get().setStatus(false);
+            Customer customer1 = customerRepository.save(customer.get());
+            CustomerExtraDTO customerExtraDTO = new CustomerExtraDTO();
+            customerExtraDTO.setCustomer(CustomerMapper.INSTANCE.toDTO(customer1));
+            List<Membership> memberships = customer1.getMembershipList();
+            if (!memberships.isEmpty()) {
+                customerExtraDTO.setMembershipList(memberships.stream().filter(m -> m.getStatus().equals(true)).map(MembershipMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            }
+            return customerExtraDTO;
+        } else {
+            throw new InvalidParameterException("Not found customer");
+        }
     }
 }
