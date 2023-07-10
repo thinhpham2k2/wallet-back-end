@@ -42,7 +42,7 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
 
     Boolean existsProgramByStatusAndStateAndToken(boolean status, boolean state, String token);
 
-    Boolean existsProgramByStatusAndState(boolean status, boolean state);
+    Boolean existsProgramByStatusAndStateAndPartnerId(boolean status, boolean state, long partnerId);
 
     Optional<Program> getProgramByStatusAndId(boolean status, long programId);
 
