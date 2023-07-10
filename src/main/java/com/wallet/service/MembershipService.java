@@ -466,4 +466,39 @@ public class MembershipService implements IMembershipService {
             throw new InvalidParameterException("Not found membership!");
         }
     }
+
+    @Override
+    public MembershipExtraDTO deleteMember(String token, long memberId) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Membership> membership = membershipRepository.findMembershipByPartnerAndId(true, userName, memberId);
+
+        if (membership.isPresent()) {
+            membership.get().setState(false);
+            membership.get().setStatus(false);
+            Membership membership1 = membershipRepository.save(membership.get());
+
+            MembershipExtraDTO membershipExtra = new MembershipExtraDTO();
+
+            //Set Customer
+            membershipExtra.setCustomer(CustomerMapper.INSTANCE.toDTO(membership1.getCustomer()));
+            //Set Membership
+            membershipExtra.setMembership(MembershipMapper.INSTANCE.toDTO(membership1));
+            //Set Partner
+            membershipExtra.setPartner(PartnerMapper.INSTANCE.toDTO(membership1.getCustomer().getPartner()));
+            //Set Wallet List
+            membershipExtra.setWalletList(membership1.getWalletList().stream().map(WalletMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            //Set Level List
+            membershipExtra.setLevelList(membership1.getProgram().getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getStatus().equals(true)).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+
+            return membershipExtra;
+        } else {
+            throw new InvalidParameterException("Not found membership!");
+        }
+    }
 }

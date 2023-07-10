@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.security.InvalidParameterException;
 import java.util.Optional;
 
 @RestController
@@ -123,10 +124,10 @@ public class ProgramController {
     @PutMapping("")
     @Secured({PARTNER})
     @Operation(summary = "Update program for partner")
-    public ResponseEntity<?> createProgram(@RequestBody ProgramUpdateDTO update, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+    public ResponseEntity<?> updateProgram(@RequestBody ProgramUpdateDTO update, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
-        ProgramExtraDTO program = programService.updateProgram(update, jwt);
         if (jwt != null) {
+            ProgramExtraDTO program = programService.updateProgram(update, jwt);
             if (program != null) {
                 return ResponseEntity.status(HttpStatus.OK).body(program);
             } else {
@@ -134,5 +135,23 @@ public class ProgramController {
             }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @DeleteMapping("/{id}")
+    @Secured({ADMIN})
+    @Operation(summary = "Delete a program")
+    public ResponseEntity<?> deleteProgram(@PathVariable(value = "id", required = false) Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (id == null) {
+            throw new InvalidParameterException("Invalid program Id");
+        } else {
+            if (jwt != null) {
+                ProgramDTO programDTO = programService.deleteProgram(id, jwt);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(programDTO);
+
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+            }
+        }
     }
 }

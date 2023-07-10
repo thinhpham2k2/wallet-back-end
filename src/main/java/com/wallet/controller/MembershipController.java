@@ -102,4 +102,19 @@ public class MembershipController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
+
+    @DeleteMapping("/{id}")
+    @Secured({PARTNER})
+    @Operation(summary = "Delete membership")
+    public ResponseEntity<?> deleteMembership(@PathVariable(value = "id") Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            MembershipExtraDTO result = membershipService.deleteMember(jwt, id);
+            if (result != null) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Delete membership fail!");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
 }

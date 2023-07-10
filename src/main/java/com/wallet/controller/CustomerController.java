@@ -75,9 +75,9 @@ public class CustomerController {
     @Operation(summary = "Create customer and membership")
     public ResponseEntity<?> createCustomerMembership(@RequestBody CustomerProgramDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
-        if(jwt != null) {
+        if (jwt != null) {
             CustomerMembershipDTO result = membershipService.createCustomerMembership(jwt, customer);
-            if(result != null){
+            if (result != null) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create customer fail !");
@@ -90,9 +90,9 @@ public class CustomerController {
     @Operation(summary = "Create customer and membership in website")
     public ResponseEntity<?> createCustomerMembership(@ModelAttribute CustomerProgramWebDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
-        if(jwt != null) {
+        if (jwt != null) {
             CustomerMembershipDTO result = membershipService.createCustomerMembershipWeb(jwt, customer);
-            if(result != null){
+            if (result != null) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create customer fail !");
@@ -105,9 +105,9 @@ public class CustomerController {
     @Operation(summary = "Create customer")
     public ResponseEntity<?> createCustomer(@RequestBody CustomerProgramDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
-        if(jwt != null) {
+        if (jwt != null) {
             CustomerMembershipDTO result = membershipService.createCustomer(jwt, customer);
-            if(result != null){
+            if (result != null) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create customer fail !");
@@ -120,12 +120,42 @@ public class CustomerController {
     @Operation(summary = "Create customer in website")
     public ResponseEntity<?> createCustomerWeb(@ModelAttribute CustomerProgramWebDTO customer, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
-        if(jwt != null) {
+        if (jwt != null) {
             CustomerMembershipDTO result = membershipService.createCustomerWeb(jwt, customer);
-            if(result != null){
+            if (result != null) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Create customer fail !");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @PutMapping("/{id}")
+    @Secured({PARTNER})
+    @Operation(summary = "Update customer")
+    public ResponseEntity<?> updateCustomer(@RequestBody CustomerUpdateDTO customerUpdateDTO, @PathVariable(value = "id") Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            CustomerExtraDTO result = customerService.updateCustomer(customerUpdateDTO, id, jwt);
+            if (result != null) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Update customer fail !");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @DeleteMapping("/{id}")
+    @Secured({PARTNER})
+    @Operation(summary = "Delete customer")
+    public ResponseEntity<?> deleteCustomer(@PathVariable(value = "id") Long id, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            CustomerExtraDTO result = customerService.deleteCustomer(id, jwt);
+            if (result != null) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Update customer fail !");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }

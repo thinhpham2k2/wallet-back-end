@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -13,12 +12,12 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerProgramWebDTO implements Serializable {
+public class CustomerUpdateDTO implements Serializable {
 
-    private String customerId;
     private String fullName;
     private String email;
     private LocalDate dob;
-    private MultipartFile image;
+    private String image;
     private String phone;
+    private Boolean state;
 }

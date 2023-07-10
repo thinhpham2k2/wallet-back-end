@@ -21,4 +21,6 @@ public interface IProgramService {
     ProgramExtraDTO createProgram(ProgramCreationDTO creation, String token);
 
     ProgramExtraDTO updateProgram(ProgramUpdateDTO update, String token);
+
+    ProgramDTO deleteProgram(Long programId, String token);
 }
