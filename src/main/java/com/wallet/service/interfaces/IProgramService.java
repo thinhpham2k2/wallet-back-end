@@ -22,5 +22,7 @@ public interface IProgramService {
 
     ProgramExtraDTO updateProgram(ProgramUpdateDTO update, String token);
 
+    ProgramExtraDTO updateProgramState(boolean state, long programId, String token);
+
     ProgramDTO deleteProgram(Long programId, String token);
 }

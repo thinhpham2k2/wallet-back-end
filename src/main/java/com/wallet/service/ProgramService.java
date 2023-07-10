@@ -363,4 +363,43 @@ public class ProgramService implements IProgramService {
             throw new InvalidParameterException("Not found program !");
         }
     }
+
+    @Override
+    public ProgramExtraDTO updateProgramState(boolean state, long programId, String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
+        if (partner.isPresent()) {
+            Optional<Program> program = programRepository.getProgramByStatusAndId(true, programId, userName);
+            if (program.isPresent()) {
+                if (state) {
+                    List<Program> programsActive = programRepository.getAllByStateAndStatusAndPartnerId(true, true, partner.get().getId());
+                    if (!programsActive.isEmpty()) {
+                        for (Program p : programsActive) {
+                            p.setState(false);
+                            programRepository.save(p);
+                        }
+                    }
+                }
+
+                program.get().setState(state);
+                Program program1 = programRepository.save(program.get());
+                ProgramExtraDTO programExtraDTO = new ProgramExtraDTO();
+                programExtraDTO.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, program.get().getId()));
+                programExtraDTO.setProgram(ProgramMapper.INSTANCE.toDTO(program1));
+                programExtraDTO.setPartner(PartnerMapper.INSTANCE.toDTO(program1.getPartner()));
+                programExtraDTO.setLevelList(program1.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getStatus().equals(true)).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+            } else {
+                throw new InvalidParameterException("Not found program !");
+            }
+        } else {
+            throw new InvalidParameterException("Invalid partner !");
+        }
+        return null;
+    }
 }
