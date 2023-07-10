@@ -137,6 +137,22 @@ public class ProgramController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
 
+    @PutMapping("/{id}")
+    @Secured({PARTNER})
+    @Operation(summary = "Update program for partner")
+    public ResponseEntity<?> updateProgram(@PathVariable(value = "id") Long id, @RequestParam boolean state, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            ProgramExtraDTO program = programService.updateProgramState(state, id, jwt);
+            if (program != null) {
+                return ResponseEntity.status(HttpStatus.OK).body(program);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Update program fails !");
+            }
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
     @DeleteMapping("/{id}")
     @Secured({ADMIN})
     @Operation(summary = "Delete a program")

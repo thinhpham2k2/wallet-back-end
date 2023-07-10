@@ -7,4 +7,6 @@ import java.util.List;
 public interface IWalletService {
 
     List<WalletDTO> findAllByProgramTokenAndCustomerId(String token, String customerId);
+
+
 }

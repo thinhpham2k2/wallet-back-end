@@ -394,12 +394,12 @@ public class ProgramService implements IProgramService {
                 programExtraDTO.setProgram(ProgramMapper.INSTANCE.toDTO(program1));
                 programExtraDTO.setPartner(PartnerMapper.INSTANCE.toDTO(program1.getPartner()));
                 programExtraDTO.setLevelList(program1.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getStatus().equals(true)).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                return programExtraDTO;
             } else {
                 throw new InvalidParameterException("Not found program !");
             }
         } else {
             throw new InvalidParameterException("Invalid partner !");
         }
-        return null;
     }
 }
