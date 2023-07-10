@@ -139,8 +139,8 @@ public class ProgramController {
 
     @PutMapping("/{id}")
     @Secured({PARTNER})
-    @Operation(summary = "Update program for partner")
-    public ResponseEntity<?> updateProgram(@PathVariable(value = "id") Long id, @RequestParam boolean state, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+    @Operation(summary = "Update program state for partner")
+    public ResponseEntity<?> updateProgramState(@PathVariable(value = "id") Long id, @RequestParam boolean state, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
         String jwt = jwtService.getJwtFromRequest(request);
         if (jwt != null) {
             ProgramExtraDTO program = programService.updateProgramState(state, id, jwt);

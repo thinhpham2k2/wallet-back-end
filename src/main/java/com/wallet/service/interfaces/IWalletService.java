@@ -8,5 +8,5 @@ public interface IWalletService {
 
     List<WalletDTO> findAllByProgramTokenAndCustomerId(String token, String customerId);
 
-
+    WalletDTO createWallet(String token, long membershipId, long typeWalletId);
 }

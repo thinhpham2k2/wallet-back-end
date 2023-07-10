@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
@@ -45,6 +42,21 @@ public class WalletController {
                 return ResponseEntity.status(HttpStatus.OK).body(result);
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found wallet list !");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
+    }
+
+    @PostMapping("")
+    @Secured({PARTNER})
+    @Operation(summary = "Create wallet by program token")
+    public ResponseEntity<?> createWallet(@RequestParam(defaultValue = "0") long membershipId, @RequestParam(defaultValue = "0") long typeId, HttpServletRequest request) throws MethodArgumentTypeMismatchException {
+        String jwt = jwtService.getJwtFromRequest(request);
+        if (jwt != null) {
+            WalletDTO result = walletService.createWallet(jwt, membershipId, typeId);
+            if (result != null) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found wallet !");
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found jwt token !");
     }
