@@ -63,4 +63,8 @@ public interface MembershipRepository extends JpaRepository<Membership, Long> {
             "AND m.customer.partner.userName = ?2 " +
             "AND m.id = ?3")
     Optional<Membership> findMembershipByPartnerAndId(boolean status, String userName, long membershipId);
+
+    @Query("SELECT COUNT(m) FROM Membership m " +
+            "WHERE m.status = ?1 AND m.customer.partner.id = ?2")
+    Long countAllByStatusAndPartner(boolean status, Long partnerId);
 }

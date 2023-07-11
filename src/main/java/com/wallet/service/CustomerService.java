@@ -3,12 +3,16 @@ package com.wallet.service;
 import com.wallet.dto.CustomerDTO;
 import com.wallet.dto.CustomerExtraDTO;
 import com.wallet.dto.CustomerUpdateDTO;
+import com.wallet.dto.TitleDTO;
 import com.wallet.entity.Customer;
 import com.wallet.entity.Membership;
+import com.wallet.entity.Partner;
+import com.wallet.entity.Program;
 import com.wallet.jwt.JwtTokenProvider;
 import com.wallet.mapper.CustomerMapper;
 import com.wallet.mapper.MembershipMapper;
-import com.wallet.repository.CustomerRepository;
+import com.wallet.mapper.ProgramMapper;
+import com.wallet.repository.*;
 import com.wallet.service.interfaces.ICustomerService;
 import com.wallet.service.interfaces.IPagingService;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -30,6 +34,14 @@ import java.util.stream.Collectors;
 public class CustomerService implements ICustomerService {
 
     private final CustomerRepository customerRepository;
+
+    private final PartnerRepository partnerRepository;
+
+    private final MembershipRepository membershipRepository;
+
+    private final TransactionRepository transactionRepository;
+
+    private final ProgramRepository programRepository;
 
     private final IPagingService pagingService;
 
@@ -173,6 +185,29 @@ public class CustomerService implements ICustomerService {
             return customerExtraDTO;
         } else {
             throw new InvalidParameterException("Not found customer");
+        }
+    }
+
+    @Override
+    public TitleDTO getTitle(String token) {
+        String userName;
+        try {
+            JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+            userName = jwtTokenProvider.getUserNameFromJWT(token);
+        } catch (ExpiredJwtException e) {
+            throw new InvalidParameterException("Invalid JWT token");
+        }
+        Optional<Partner> partner = partnerRepository.findPartnerByUserNameAndStatus(userName, true);
+        if (partner.isPresent()) {
+            TitleDTO title = new TitleDTO();
+            title.setNumberOfCustomer(partner.get().getCustomerList().stream().filter(c -> c.getStatus().equals(true)).count());
+            title.setNumberOfMember(membershipRepository.countAllByStatusAndPartner(true, partner.get().getId()));
+            title.setNumberOfTransaction(transactionRepository.countAllByStatusAndPartner(true, partner.get().getId()));
+            Optional<Program> programOptional = programRepository.getProgramByStatusAndStateAndPartnerId(true, true, partner.get().getId());
+            title.setProgram(ProgramMapper.INSTANCE.toDTO(programOptional.orElseGet(Program::new)));
+            return title;
+        } else {
+            throw new InvalidParameterException("Not found partner");
         }
     }
 }

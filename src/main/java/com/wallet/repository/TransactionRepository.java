@@ -14,4 +14,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             "AND t.request.status = ?1" +
             "AND t.wallet.id IN ?2 ")
     List<Request> findAllRequestByWalletId(boolean status, List<Long> walletIds);
+
+    @Query("SELECT COUNT(t) FROM Transaction t " +
+            "WHERE t.status = ?1 AND t.request.partner.id = ?2")
+    Long countAllByStatusAndPartner(boolean status, Long partnerId);
 }

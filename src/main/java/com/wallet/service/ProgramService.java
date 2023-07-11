@@ -377,24 +377,28 @@ public class ProgramService implements IProgramService {
         if (partner.isPresent()) {
             Optional<Program> program = programRepository.getProgramByStatusAndId(true, programId, userName);
             if (program.isPresent()) {
-                if (state) {
-                    List<Program> programsActive = programRepository.getAllByStateAndStatusAndPartnerId(true, true, partner.get().getId());
-                    if (!programsActive.isEmpty()) {
-                        for (Program p : programsActive) {
-                            p.setState(false);
-                            programRepository.save(p);
+                if (program.get().getDateUpdated().isAfter(LocalDate.now())) {
+                    if (state) {
+                        List<Program> programsActive = programRepository.getAllByStateAndStatusAndPartnerId(true, true, partner.get().getId());
+                        if (!programsActive.isEmpty()) {
+                            for (Program p : programsActive) {
+                                p.setState(false);
+                                programRepository.save(p);
+                            }
                         }
                     }
-                }
 
-                program.get().setState(state);
-                Program program1 = programRepository.save(program.get());
-                ProgramExtraDTO programExtraDTO = new ProgramExtraDTO();
-                programExtraDTO.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, program.get().getId()));
-                programExtraDTO.setProgram(ProgramMapper.INSTANCE.toDTO(program1));
-                programExtraDTO.setPartner(PartnerMapper.INSTANCE.toDTO(program1.getPartner()));
-                programExtraDTO.setLevelList(program1.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getStatus().equals(true)).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
-                return programExtraDTO;
+                    program.get().setState(state);
+                    Program program1 = programRepository.save(program.get());
+                    ProgramExtraDTO programExtraDTO = new ProgramExtraDTO();
+                    programExtraDTO.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, program.get().getId()));
+                    programExtraDTO.setProgram(ProgramMapper.INSTANCE.toDTO(program1));
+                    programExtraDTO.setPartner(PartnerMapper.INSTANCE.toDTO(program1.getPartner()));
+                    programExtraDTO.setLevelList(program1.getProgramLevelList().stream().map(ProgramLevel::getLevel).filter(l -> l.getStatus().equals(true)).map(LevelMapper.INSTANCE::toDTO).collect(Collectors.toList()));
+                    return programExtraDTO;
+                } else {
+                    throw new InvalidParameterException("The program has expired !");
+                }
             } else {
                 throw new InvalidParameterException("Not found program !");
             }

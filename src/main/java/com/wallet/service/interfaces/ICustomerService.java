@@ -3,6 +3,7 @@ package com.wallet.service.interfaces;
 import com.wallet.dto.CustomerDTO;
 import com.wallet.dto.CustomerExtraDTO;
 import com.wallet.dto.CustomerUpdateDTO;
+import com.wallet.dto.TitleDTO;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -18,4 +19,6 @@ public interface ICustomerService {
     CustomerExtraDTO updateCustomer(CustomerUpdateDTO customerUpdate, long customerId, String token);
 
     CustomerExtraDTO deleteCustomer(long customerId, String token);
+
+    TitleDTO getTitle(String token);
 }

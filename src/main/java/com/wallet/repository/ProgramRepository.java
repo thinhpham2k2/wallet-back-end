@@ -55,4 +55,6 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
     Program getProgramByStatusAndToken(boolean status, String token);
 
     List<Program> getAllByStateAndStatusAndPartnerId(boolean state, boolean status, long partnerId);
+
+    Optional<Program> getProgramByStatusAndStateAndPartnerId(boolean status, boolean state, long partnerId);
 }
