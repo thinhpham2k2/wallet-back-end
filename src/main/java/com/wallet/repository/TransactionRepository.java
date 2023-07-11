@@ -5,6 +5,7 @@ import com.wallet.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
@@ -18,4 +19,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT COUNT(t) FROM Transaction t " +
             "WHERE t.status = ?1 AND t.request.partner.id = ?2")
     Long countAllByStatusAndPartner(boolean status, Long partnerId);
+
+    List<Transaction> getTransactionByDateCreatedBetweenAndStatusAndRequest_PartnerId(LocalDate fromDate, LocalDate toDate, boolean status, long partnerId);
 }
