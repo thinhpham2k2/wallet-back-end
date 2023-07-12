@@ -45,7 +45,7 @@ public class WalletService implements IWalletService {
             if (membership.isPresent()) {
                 Optional<WalletType> walletType = walletTypeRepository.findByIdAndStatus(typeWalletId, true);
                 if (walletType.isPresent()) {
-                    if (membership.get().getWalletList().stream().filter(w -> w.getStatus().equals(true)).map(w -> w.getType().getId()).toList().contains(typeWalletId)) {
+                    if (!membership.get().getWalletList().stream().filter(w -> w.getStatus().equals(true)).map(w -> w.getType().getId()).toList().contains(typeWalletId)) {
                         Wallet wallet = new Wallet();
                         wallet.setBalance(BigDecimal.ZERO);
                         wallet.setTotalReceipt(BigDecimal.ZERO);
