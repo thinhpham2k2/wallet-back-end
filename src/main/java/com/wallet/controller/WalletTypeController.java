@@ -28,7 +28,7 @@ public class WalletTypeController {
     @GetMapping("")
     @Secured({PARTNER})
     @Operation(summary = "Get wallet type")
-    public ResponseEntity<?> getAllType(){
+    public ResponseEntity<?> getAllType() {
         return ResponseEntity.status(HttpStatus.OK).body(walletTypeService.getAllType());
     }
 }
