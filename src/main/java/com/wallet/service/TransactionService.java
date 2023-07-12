@@ -47,9 +47,9 @@ public class TransactionService implements ITransactionService {
                 // Xử lý logic của bạn với currentDate
                 LocalDate finalCurrentDate = currentDate;
                 charts.add(new ChartDTO(finalCurrentDate,
-                        transactions.stream().filter(t -> t.getDateCreated().isEqual(finalCurrentDate) && !t.getType().getType())
-                                .map(Transaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
                         transactions.stream().filter(t -> t.getDateCreated().isEqual(finalCurrentDate) && t.getType().getType())
+                                .map(Transaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
+                        transactions.stream().filter(t -> t.getDateCreated().isEqual(finalCurrentDate) && !t.getType().getType())
                                 .map(Transaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add)));
                 // Tăng ngày hiện tại lên 1
                 currentDate = currentDate.plusDays(1);
