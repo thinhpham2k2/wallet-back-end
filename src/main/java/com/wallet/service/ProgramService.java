@@ -290,6 +290,7 @@ public class ProgramService implements IProgramService {
                                         List<Program> programList = programRepository.findAllByStatusAndStateAndDateUpdatedBeforeAndPartnerId(true, true, LocalDate.now(), partner.get().getId());
                                         if (!programList.isEmpty()) {
                                             for (Program program : programList) {
+                                                membershipRepository.saveAll(program.getMembershipList().stream().peek(m -> m.setState(false)).toList());
                                                 program.setState(false);
                                                 programRepository.save(program);
                                             }
@@ -382,6 +383,7 @@ public class ProgramService implements IProgramService {
                         List<Program> programsActive = programRepository.getAllByStateAndStatusAndPartnerId(true, true, partner.get().getId());
                         if (!programsActive.isEmpty()) {
                             for (Program p : programsActive) {
+                                membershipRepository.saveAll(p.getMembershipList().stream().peek(m -> m.setState(false)).toList());
                                 p.setState(false);
                                 programRepository.save(p);
                             }
@@ -390,6 +392,7 @@ public class ProgramService implements IProgramService {
 
                     program.get().setState(state);
                     Program program1 = programRepository.save(program.get());
+                    membershipRepository.saveAll(program1.getMembershipList().stream().peek(m -> m.setState(state)).toList());
                     ProgramExtraDTO programExtraDTO = new ProgramExtraDTO();
                     programExtraDTO.setNumOfMembers(membershipRepository.countAllByStatusAndProgramId(true, program.get().getId()));
                     programExtraDTO.setProgram(ProgramMapper.INSTANCE.toDTO(program1));
