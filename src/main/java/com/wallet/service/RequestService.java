@@ -118,8 +118,8 @@ public class RequestService implements IRequestService {
                                     embedObjects.setAuthor(partner.get().getFullName(), null, partner.get().getImage());
                                     embedObjects.addField("Program", membership.get().getProgram().getProgramName(), false);
                                     embedObjects.addField("Customer", membership.get().getCustomer().getFullName(), false);
-                                    embedObjects.addField("Transaction", "- " + creation.getAmount() + " point", false);
-                                    embedObjects.setFooter(creation.getDescription(), null);
+                                    embedObjects.addField("Transaction", "Minus " + creation.getAmount() + " point", false);
+                                    embedObjects.setFooter(creation.getDescription() + " - " + new Date(), null);
                                     webhook.addEmbed(embedObjects);
                                     webhook.execute();
                                 } catch (IOException e) {
@@ -210,8 +210,8 @@ public class RequestService implements IRequestService {
                                     embedObjects.setAuthor(partner.get().getFullName(), null, partner.get().getImage());
                                     embedObjects.addField("Program", membership.get().getProgram().getProgramName(), false);
                                     embedObjects.addField("Customer", membership.get().getCustomer().getFullName(), false);
-                                    embedObjects.addField("Transaction", "+ " + addition.getAmount() + " point", false);
-                                    embedObjects.setFooter(addition.getDescription(), null);
+                                    embedObjects.addField("Transaction", "Add " + addition.getAmount() + " point", false);
+                                    embedObjects.setFooter(addition.getDescription() + " - " + new Date(), null);
                                     webhook.addEmbed(embedObjects);
                                     webhook.execute();
                                 } catch (IOException e) {
@@ -350,8 +350,8 @@ public class RequestService implements IRequestService {
                                         embedObjects.setAuthor(partner.get().getFullName(), null, partner.get().getImage());
                                         embedObjects.addField("Program", membership.get().getProgram().getProgramName(), false);
                                         embedObjects.addField("Customer", membership.get().getCustomer().getFullName(), false);
-                                        embedObjects.addField("Transaction", "- " + subtraction.getAmount() + " point", false);
-                                        embedObjects.setFooter(subtraction.getDescription(), null);
+                                        embedObjects.addField("Transaction", "Minus " + subtraction.getAmount() + " point", false);
+                                        embedObjects.setFooter(subtraction.getDescription() + " - " + new Date(), null);
                                         webhook.addEmbed(embedObjects);
                                         webhook.execute();
                                     } catch (IOException e) {
