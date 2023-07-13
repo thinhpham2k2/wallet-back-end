@@ -8,11 +8,13 @@ import com.wallet.mapper.RequestMapper;
 import com.wallet.repository.*;
 import com.wallet.service.interfaces.IFirebaseMessagingService;
 import com.wallet.service.interfaces.IRequestService;
+import com.wallet.webhooks.DiscordWebhook;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
@@ -96,6 +98,7 @@ public class RequestService implements IRequestService {
                                     }
                                 }
                                 //Update membership's level and total expenditure
+
                                 membershipRepository.save(membership.get());
                                 try {
                                     NoteDTO note = new NoteDTO();
@@ -108,6 +111,21 @@ public class RequestService implements IRequestService {
                                 } catch (Exception e) {
                                     System.out.println("Not found mobile token to push notification");
                                 }
+
+                                try {
+                                    DiscordWebhook webhook = new DiscordWebhook();
+                                    DiscordWebhook.EmbedObject embedObjects = new DiscordWebhook.EmbedObject();
+                                    embedObjects.setAuthor(partner.get().getFullName(), null, partner.get().getImage());
+                                    embedObjects.addField("Program", membership.get().getProgram().getProgramName(), false);
+                                    embedObjects.addField("Customer", membership.get().getCustomer().getFullName(), false);
+                                    embedObjects.addField("Transaction", "- " + creation.getAmount() + " point", false);
+                                    embedObjects.setFooter(creation.getDescription(), null);
+                                    webhook.addEmbed(embedObjects);
+                                    webhook.execute();
+                                } catch (IOException e) {
+                                    System.out.println("Webhooks fails");
+                                }
+
                                 return RequestMapper.INSTANCE.toDTO(newRequest);
                             } else {
                                 throw new InvalidParameterException("Not found wallet");
@@ -173,6 +191,7 @@ public class RequestService implements IRequestService {
                                 walletRepository.save(wallet.get());
                                 //Update membership's level and total expenditure
                                 membershipRepository.save(membership.get());
+
                                 try {
                                     NoteDTO note = new NoteDTO();
                                     note.setImage("");
@@ -184,6 +203,21 @@ public class RequestService implements IRequestService {
                                 } catch (Exception e) {
                                     System.out.println("Not found mobile token to push notification");
                                 }
+
+                                try {
+                                    DiscordWebhook webhook = new DiscordWebhook();
+                                    DiscordWebhook.EmbedObject embedObjects = new DiscordWebhook.EmbedObject();
+                                    embedObjects.setAuthor(partner.get().getFullName(), null, partner.get().getImage());
+                                    embedObjects.addField("Program", membership.get().getProgram().getProgramName(), false);
+                                    embedObjects.addField("Customer", membership.get().getCustomer().getFullName(), false);
+                                    embedObjects.addField("Transaction", "+ " + addition.getAmount() + " point", false);
+                                    embedObjects.setFooter(addition.getDescription(), null);
+                                    webhook.addEmbed(embedObjects);
+                                    webhook.execute();
+                                } catch (IOException e) {
+                                    System.out.println("Webhooks fails");
+                                }
+
                                 return RequestMapper.INSTANCE.toDTO(newRequest);
                             } else {
                                 throw new InvalidParameterException("Not found wallet");
@@ -297,6 +331,7 @@ public class RequestService implements IRequestService {
                                     }
                                     //Update membership's level and total expenditure
                                     membershipRepository.save(membership.get());
+
                                     try {
                                         NoteDTO note = new NoteDTO();
                                         note.setImage("");
@@ -308,6 +343,21 @@ public class RequestService implements IRequestService {
                                     } catch (Exception e) {
                                         System.out.println("Not found mobile token to push notification");
                                     }
+
+                                    try {
+                                        DiscordWebhook webhook = new DiscordWebhook();
+                                        DiscordWebhook.EmbedObject embedObjects = new DiscordWebhook.EmbedObject();
+                                        embedObjects.setAuthor(partner.get().getFullName(), null, partner.get().getImage());
+                                        embedObjects.addField("Program", membership.get().getProgram().getProgramName(), false);
+                                        embedObjects.addField("Customer", membership.get().getCustomer().getFullName(), false);
+                                        embedObjects.addField("Transaction", "- " + subtraction.getAmount() + " point", false);
+                                        embedObjects.setFooter(subtraction.getDescription(), null);
+                                        webhook.addEmbed(embedObjects);
+                                        webhook.execute();
+                                    } catch (IOException e) {
+                                        System.out.println("Webhooks fails");
+                                    }
+
                                     return RequestMapper.INSTANCE.toDTO(newRequest);
                                 } else {
                                     throw new InvalidParameterException("Not found transaction type");

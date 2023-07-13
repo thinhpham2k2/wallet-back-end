@@ -19,4 +19,5 @@ public class TypeController {
     public static final String PARTNER = "ROLE_Partner";
 
     private final ITypeService typeService;
+
 }
