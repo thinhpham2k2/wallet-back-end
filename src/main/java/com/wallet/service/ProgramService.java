@@ -290,6 +290,7 @@ public class ProgramService implements IProgramService {
                                         List<Program> programList = programRepository.findAllByStatusAndStateAndDateUpdatedBeforeAndPartnerId(true, true, LocalDate.now(), partner.get().getId());
                                         if (!programList.isEmpty()) {
                                             for (Program program : programList) {
+                                                //Change membership state
                                                 membershipRepository.saveAll(program.getMembershipList().stream().peek(m -> m.setState(false)).toList());
                                                 program.setState(false);
                                                 programRepository.save(program);
